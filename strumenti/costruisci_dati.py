@@ -6,7 +6,7 @@ Fonti (tutte copiate in dati/ con la loro provenienza):
   - NIST Atomic Spectra Database, configurazioni ed energie di ionizzazione (via PDG 2024, tab. 5.1):
     dati/nist_configurazioni.js (Z 1-103)
   - IUPAC CIAAW, composizioni isotopiche ed elementi radioattivi (NUBASE2020): dati/isotopi.py
-  - Schede in italiano (storia, usi, curiosita'): dati/testi_1..4.py
+  - Schede in italiano (storia, usi, curiosita'): dati/testi_1..4.py; descrizioni: dati/descrizioni.py
 
 Uso: python3 strumenti/costruisci_dati.py   (stampa anche il controllo incrociato tra le fonti)
 """
@@ -16,6 +16,7 @@ QUI = os.path.dirname(os.path.abspath(__file__))
 DATI = os.path.join(QUI, '..', 'dati')
 sys.path.insert(0, DATI)
 from isotopi import ISOTOPI  # noqa: E402
+from descrizioni import D as DESCR  # noqa: E402
 
 T = {}
 for i in range(1, 5):
@@ -162,7 +163,7 @@ for z in range(1, 119):
         'ea': num(r['ElectronAffinity']), 'ox': r['OxidationStates'].replace('-', '−').strip(),
         'mp': num(r['MeltingPoint']), 'bp': num(r['BoilingPoint']), 'd': num(r['Density']),
         'p': p, 'g': g, 'b': blocco, 'row': row, 'col': col,
-        'anno': anno, 'chi': chi, 'storia': storia, 'usi': usi, 'cur': cur, 'cpk': r['CPKHexColor'],
+        'descr': DESCR[z], 'anno': anno, 'chi': chi, 'storia': storia, 'usi': usi, 'cur': cur, 'cpk': r['CPKHexColor'],
     })
 
 json.dump(elementi, open(os.path.join(DATI, 'elementi.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))

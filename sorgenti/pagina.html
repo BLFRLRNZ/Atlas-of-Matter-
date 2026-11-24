@@ -37,6 +37,7 @@ button,input{font:inherit;color:inherit}
 .pagina{max-width:720px;margin:0 auto;padding:0 20px 48px}
 [hidden]{display:none!important}
 sup{font-size:.62em;line-height:0;vertical-align:.62em;margin-left:.04em}
+sub{font-size:.66em;line-height:0;vertical-align:-.28em;margin-left:.02em}
 
 /* ---------- copertina e tavola ---------- */
 .intestazione{padding:44px 0 6px}
@@ -115,6 +116,7 @@ sup{font-size:.62em;line-height:0;vertical-align:.62em;margin-left:.04em}
 .eroe h1{margin:0;font-weight:400;font-size:clamp(30px,8.5vw,44px);line-height:1.05;letter-spacing:-.025em}
 .eroe .inglese{margin:6px 0 0;color:var(--tenue);font-size:15px}
 .famiglia{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:14.5px;color:var(--tenue)}
+.descrizione{margin:20px 0 0;max-width:34em;font-size:18px;line-height:1.62;color:#D5DDEA}
 .famiglia i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);flex:none}
 
 .visore{position:relative;width:calc(100% + 40px);max-width:560px;margin:4px -20px 0}
@@ -207,6 +209,7 @@ footer button{border:1px solid rgba(214,226,255,.25);background:var(--vetro);bor
       <div class="simbolo-nome"><span class="simbolo" id="simbolo"></span><h1 id="nome"></h1></div>
       <p class="inglese" id="inglese"></p>
       <div class="famiglia" id="famiglia"></div>
+      <p class="descrizione" id="descrizione"></p>
     </header>
 
     <div class="visore"><canvas id="visore" aria-label="Modello tridimensionale dell'atomo: trascina per ruotarlo"></canvas></div>

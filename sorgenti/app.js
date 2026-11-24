@@ -9,6 +9,7 @@ const FAMIGLIE = [
 ];
 const COLORE = Object.fromEntries(FAMIGLIE.map(([n, v]) => [n, 'var(' + v + ')']));
 const VAR_COLORE = Object.fromEntries(FAMIGLIE);
+const pedici = (s) => s.replace(/[₀₁₂₃₄₅₆₇₈₉]+/g, (m) => '<sub>' + [...m].map((c) => '₀₁₂₃₄₅₆₇₈₉'.indexOf(c)).join('') + '</sub>');
 const apici = (s) => s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => '<sup>' + [...m].map((c) => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('') + '</sup>');
 const PLURALE = {'Metallo alcalino': 'Metalli alcalini', 'Metallo alcalino-terroso': 'Metalli alcalino-terrosi',
   'Metallo di transizione': 'Metalli di transizione', 'Metallo post-transizionale': 'Metalli post-transizionali',
@@ -225,6 +226,7 @@ function mostraElemento(e) {
     (e.cf === 'NIST' ? 'Fonte: NIST.' : 'Valore calcolato, non ancora misurato (fonte: PubChem).');
 
   $('proprieta').innerHTML = proprieta(e);
+  $('descrizione').innerHTML = pedici(e.descr);
   $('anno').textContent = e.anno;
   $('chi').textContent = e.chi;
   $('storia').textContent = e.storia;
