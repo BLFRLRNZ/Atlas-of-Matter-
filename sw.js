@@ -1,5 +1,5 @@
 // Service worker: conserva l'app sul telefono così funziona anche senza connessione.
-const CACHE = 'atlante-v3';
+const CACHE = 'atlante-v4';
 const FILE = ['./', 'index.html', 'manifest.webmanifest',
   'caratteri/dm-sans.woff',
   'icone/icona-180.png', 'icone/icona-192.png', 'icone/icona-512.png'];

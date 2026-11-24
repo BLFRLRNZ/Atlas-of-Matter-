@@ -295,7 +295,7 @@ function proprieta(e) {
 
 /* ---------- viste del visore ---------- */
 let vistaCorrente = 'atomo';
-const schede = document.querySelectorAll('.schede button');
+const schede = document.querySelectorAll('.schede button[data-vista]');
 for (const b of schede) b.onclick = () => impostaVista(b.dataset.vista);
 function impostaVista(v) {
   vistaCorrente = v;
