@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlante della materia</title>
+<meta name="description" content="I 118 elementi chimici: com'è fatto ogni atomo, come è stato scoperto, a cosa serve. Funziona anche senza connessione.">
+<meta name="theme-color" content="#ECEFE9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Atlante">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone/icona-192.png">
+<link rel="apple-touch-icon" href="icone/icona-180.png">
+<style>
+@font-face{font-family:"Bitter";src:url("caratteri/bitter.woff") format("woff");font-weight:300 900;font-style:normal;font-display:swap}
+@font-face{font-family:"Bitter";src:url("caratteri/bitter-corsivo.woff") format("woff");font-weight:300 900;font-style:italic;font-display:swap}
+@font-face{font-family:"Fira Sans";src:url("caratteri/fira-regular.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"Fira Sans";src:url("caratteri/fira-semibold.woff") format("woff");font-weight:600;font-display:swap}
+:root{
+  --carta:#ECEFE9; --carta-2:#E1E6DF; --inchiostro:#1F2B31; --tenue:#5B676C; --filo:#C3CBC4;
+  --lente:#0E2433; --lente-bordo:#081A26;
+  --protone:#E0553D; --neutrone:#A7B6C2; --elettrone:#F4C542; --fase-neg:#6FB7D9;
+  --gas-nobile:#A9CFE0; --non-metallo:#BBD7A4; --alogeno:#8FC3A8; --semimetallo:#E2E39B;
+  --alcalino:#F0D483; --alcalino-terroso:#EBAE78; --transizione:#D4A27F; --post-transizione:#C9B4A0;
+  --lantanide:#D9C7E3; --attinide:#C3B2D9;
+  --testo:"Bitter",Georgia,"Noto Serif",serif; --dati:"Fira Sans","Roboto",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--carta);color:var(--inchiostro);font:400 16.5px/1.6 var(--testo);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--inchiostro);outline-offset:2px}
+.pagina{max-width:760px;margin:0 auto;padding:0 16px 40px}
+[hidden]{display:none!important}
+
+/* ---------- tavola ---------- */
+.intestazione{padding:28px 0 14px}
+.intestazione h1{font-weight:750;font-size:clamp(30px,8.4vw,46px);line-height:1.05;letter-spacing:-.015em;margin:0}
+.intestazione p{margin:10px 0 0;max-width:34em;color:var(--tenue)}
+.cerca{display:block;margin:14px 0 6px}
+.cerca input{width:100%;font:400 16.5px var(--dati);padding:11px 14px;border:1.5px solid var(--filo);border-radius:10px;
+  background:#F6F8F4;color:var(--inchiostro)}
+.cerca input:focus{outline:none;border-color:var(--inchiostro)}
+.risultati{list-style:none;margin:0;padding:0}
+.risultati button{display:flex;align-items:baseline;gap:12px;width:100%;padding:9px 6px;border:0;border-bottom:1px solid var(--filo);
+  background:none;text-align:left;cursor:pointer}
+.risultati .rz{font:400 13px var(--dati);color:var(--tenue);min-width:2.2em;text-align:right}
+.risultati .rs{font-weight:750;min-width:1.8em}
+.risultati .vuoto{padding:9px 6px;color:var(--tenue)}
+
+.tavola-wrap{margin:16px -8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+.tavola{display:grid;grid-template-columns:12px repeat(18,minmax(0,1fr));gap:2px;padding:0 4px}
+.tavola .gr,.tavola .pe{font:400 8.5px/1 var(--dati);color:var(--tenue);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px}
+.tavola .pe{align-items:center;padding:0}
+.cella{position:relative;aspect-ratio:5/6;border:0;border-radius:3px;padding:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font:750 clamp(9.5px,2.75vw,19px)/1 var(--testo);
+  color:var(--inchiostro);transition:opacity .15s}
+.cella .cz{display:none;position:absolute;top:3px;left:4px;font:400 9px/1 var(--dati)}
+.cella .cn{display:none}
+.cella.attenuata{opacity:.22}
+.cella.sotto{outline:2.5px solid var(--inchiostro);outline-offset:1px;z-index:1}
+.cella.segnaposto{cursor:default;background:repeating-linear-gradient(135deg,var(--c) 0 3px,transparent 3px 6px)!important;
+  font:400 8px var(--dati);color:var(--tenue)}
+.f-sep{grid-column:1/-1;height:6px}
+@media (min-width:640px){
+  .tavola{gap:3px}
+  .cella{flex-direction:column;justify-content:center;gap:3px}
+  .cella .cz{display:block}
+  .cella .cn{display:block;font:400 8px/1 var(--dati);max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tavola .gr,.tavola .pe{font-size:10px}
+}
+@media (min-width:900px){ .pagina-tavola{max-width:1080px} }
+
+.lente-tavola{position:fixed;z-index:20;pointer-events:none;width:132px;padding:10px 12px 11px;border-radius:12px;
+  background:var(--inchiostro);color:var(--carta);box-shadow:0 10px 30px rgba(15,30,40,.35)}
+.lente-tavola .lz{font:400 12px var(--dati);opacity:.75}
+.lente-tavola .ls{font:800 40px/1 var(--testo);margin:2px 0 4px}
+.lente-tavola .ln{font-weight:650;font-size:15px;line-height:1.2}
+.lente-tavola .lc{font:400 11.5px/1.3 var(--dati);opacity:.8;margin-top:3px;display:flex;align-items:center;gap:6px}
+.lente-tavola .lc i,.legenda i,.famiglia i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+
+.legenda{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}
+.legenda button{display:flex;align-items:center;gap:7px;border:1.5px solid var(--filo);background:transparent;border-radius:999px;
+  padding:5px 11px 5px 9px;font:400 13px var(--dati);cursor:pointer}
+.legenda button[aria-pressed="true"]{border-color:var(--inchiostro);background:var(--inchiostro);color:var(--carta)}
+.nota-tavola{font-size:14px;color:var(--tenue);margin:14px 0 0}
+
+/* ---------- elemento ---------- */
+.barra{position:sticky;top:0;z-index:5;background:var(--carta);border-bottom:1px solid var(--filo);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;margin:0 -16px}
+.barra button{display:flex;align-items:center;gap:6px;border:0;background:none;padding:8px 6px;cursor:pointer;font:400 14.5px var(--dati);min-height:40px}
+.barra .vicini{display:flex;gap:2px}
+.barra svg{width:16px;height:16px;flex:none}
+.barra b{font-weight:600}
+
+.eroe{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin:22px 0 18px}
+.tessera{width:112px;aspect-ratio:1;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between}
+.tessera .tz{font:600 15px/1 var(--dati)}
+.tessera .ts{font:800 58px/.9 var(--testo);letter-spacing:-.02em}
+.tessera .tm{font:400 12px/1 var(--dati)}
+.eroe h1{margin:0;font-weight:750;font-size:clamp(30px,8vw,44px);line-height:1.05;letter-spacing:-.015em}
+.eroe .inglese{margin:4px 0 0;font-style:italic;color:var(--tenue);font-size:15px}
+.famiglia{display:flex;align-items:center;gap:8px;margin-top:8px;font:400 14px var(--dati)}
+
+.visore{position:relative;width:min(100%,480px);margin:6px auto 0}
+.visore canvas{display:block;width:100%;aspect-ratio:1;touch-action:none;cursor:grab}
+.schede{display:flex;justify-content:center;gap:0;margin:14px auto 0;border:1.5px solid var(--inchiostro);border-radius:999px;width:max-content;max-width:100%;overflow:hidden}
+.schede button{border:0;background:none;padding:8px 18px;font:400 14.5px var(--dati);cursor:pointer;min-height:40px}
+.schede button[aria-selected="true"]{background:var(--inchiostro);color:var(--carta)}
+.sottolivelli{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0 0}
+.sottolivelli button{border:1.5px solid var(--filo);background:none;border-radius:8px;padding:5px 10px;font:400 14px var(--dati);cursor:pointer;min-height:34px}
+.sottolivelli button[aria-pressed="true"]{border-color:var(--inchiostro);background:var(--carta-2);font-weight:600}
+.sottolivelli.m button{font-size:13px}
+.didascalia{font-size:14px;color:var(--tenue);text-align:center;max-width:32em;margin:10px auto 0}
+
+.composizione{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:22px 0 0}
+.composizione div{border-top:3px solid var(--k);padding-top:8px}
+.composizione b{display:block;font:600 30px/1.05 var(--dati)}
+.composizione span{font:400 14px var(--dati);color:var(--tenue)}
+.isotopo{font-size:15px;margin:12px 0 0;color:var(--tenue)}
+
+section.parte{border-top:1px solid var(--filo);margin-top:30px;padding-top:6px}
+section.parte h2{font-weight:750;font-size:22px;line-height:1.25;margin:14px 0 10px}
+.gusci{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.gusci div{min-width:52px;border:1.5px solid var(--filo);border-radius:8px;padding:5px 9px;text-align:center}
+.gusci dt{font:400 12px var(--dati);color:var(--tenue)}
+.gusci dd{margin:0;font:600 19px var(--dati)}
+.config{font:400 clamp(20px,5.6vw,26px)/1.35 var(--dati);margin:14px 0 4px;letter-spacing:.01em}
+.fonte{font:400 12.5px var(--dati);color:var(--tenue)}
+
+.proprieta{display:grid;grid-template-columns:1fr;gap:0;margin:0}
+@media (min-width:520px){.proprieta{grid-template-columns:1fr 1fr;column-gap:28px}}
+.proprieta div{border-bottom:1px solid var(--filo);padding:10px 0}
+.proprieta dt{font:400 13.5px var(--dati);color:var(--tenue)}
+.proprieta dd{margin:1px 0 0;font:600 19px/1.3 var(--dati)}
+.proprieta dd small{font-weight:400;font-size:13.5px;color:var(--tenue)}
+.proprieta p{margin:3px 0 0;font-size:13.5px;line-height:1.45;color:var(--tenue)}
+.ignoto{font-weight:400!important;color:var(--tenue)}
+
+.scoperta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 6px}
+.scoperta .anno{font:600 34px/1 var(--dati)}
+.scoperta .chi{font-style:italic}
+.testo p{margin:0 0 10px;max-width:38em}
+.fonti{font-size:13.5px;color:var(--tenue)}
+.fonti ul{margin:6px 0 0;padding-left:18px}
+.fonti a{color:inherit}
+
+footer{border-top:1px solid var(--filo);margin-top:36px;padding-top:14px;font-size:13.5px;color:var(--tenue)}
+footer p{margin:0 0 8px}
+footer button{border:1.5px solid var(--inchiostro);background:none;border-radius:999px;padding:7px 14px;font:400 14px var(--dati);cursor:pointer}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="pagina pagina-tavola" id="vista-tavola">
+    <header class="intestazione">
+      <h1>Atlante della materia</h1>
+      <p>I 118 elementi conosciuti: com'è fatto ogni atomo, chi l'ha scoperto e a che cosa serve.</p>
+    </header>
+    <label class="cerca"><span hidden>Cerca un elemento</span>
+      <input id="cerca" type="search" inputmode="search" autocomplete="off" placeholder="Cerca: nome, simbolo o numero">
+    </label>
+    <ul class="risultati" id="risultati"></ul>
+    <div class="tavola-wrap"><div class="tavola" id="tavola" role="grid" aria-label="Tavola periodica degli elementi"></div></div>
+    <div class="legenda" id="legenda" aria-label="Famiglie di elementi"></div>
+    <p class="nota-tavola">Tocca un elemento per aprire la sua scheda. Sul telefono puoi tenere il dito sulla tavola e scorrere: la lente mostra l'elemento sotto il dito.</p>
+    <footer>
+      <p>Atlante della materia (in inglese, Atlas of Matter). Dati da PubChem, NIST e IUPAC: l'app li contiene tutti e funziona anche senza connessione.</p>
+      <p id="installa-ios" hidden>Per installarla su iPhone: tocca Condividi, poi «Aggiungi alla schermata Home».</p>
+      <button id="installa" hidden>Installa l'app</button>
+    </footer>
+  </div>
+
+  <article class="pagina" id="vista-elemento" hidden>
+    <nav class="barra" aria-label="Navigazione">
+      <button id="torna"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Tavola</button>
+      <div class="vicini">
+        <button id="prec" aria-label="Elemento precedente"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span></span></button>
+        <button id="succ" aria-label="Elemento successivo"><span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+      </div>
+    </nav>
+    <div class="eroe">
+      <div class="tessera" id="tessera"><span class="tz"></span><span class="ts"></span><span class="tm"></span></div>
+      <div><h1 id="nome"></h1><p class="inglese" id="inglese"></p><div class="famiglia" id="famiglia"></div></div>
+    </div>
+
+    <div class="visore"><canvas id="visore" aria-label="Modello tridimensionale dell'atomo: trascina per ruotarlo"></canvas></div>
+    <div class="schede" role="tablist" aria-label="Vista del modello">
+      <button role="tab" data-vista="atomo" aria-selected="true">Atomo</button>
+      <button role="tab" data-vista="nucleo" aria-selected="false">Nucleo</button>
+      <button role="tab" data-vista="orbitali" aria-selected="false">Orbitali</button>
+    </div>
+    <div id="scelta-orbitali" hidden>
+      <div class="sottolivelli" id="sottolivelli" aria-label="Sottolivello"></div>
+      <div class="sottolivelli m" id="orbitali-m" aria-label="Orbitale"></div>
+    </div>
+    <p class="didascalia" id="didascalia"></p>
+
+    <div class="composizione" id="composizione"></div>
+    <p class="isotopo" id="isotopo"></p>
+
+    <section class="parte">
+      <h2>Gli elettroni</h2>
+      <dl class="gusci" id="gusci"></dl>
+      <p class="config" id="config"></p>
+      <p class="fonte" id="config-fonte"></p>
+    </section>
+
+    <section class="parte">
+      <h2>Proprietà</h2>
+      <dl class="proprieta" id="proprieta"></dl>
+    </section>
+
+    <section class="parte testo">
+      <h2>La scoperta</h2>
+      <div class="scoperta"><span class="anno" id="anno"></span><span class="chi" id="chi"></span></div>
+      <p id="storia"></p>
+    </section>
+    <section class="parte testo"><h2>A che cosa serve</h2><p id="usi"></p></section>
+    <section class="parte testo"><h2>Curiosità</h2><p id="curiosita"></p></section>
+    <section class="parte fonti">
+      <h2>Fonti dei dati</h2>
+      <ul>
+        <li>Proprietà fisiche e chimiche: <a href="https://pubchem.ncbi.nlm.nih.gov/periodic-table/" rel="noopener">PubChem, tavola periodica</a> (NIH, pubblico dominio).</li>
+        <li>Configurazioni elettroniche ed energie di ionizzazione: <a href="https://physics.nist.gov/asd" rel="noopener">NIST Atomic Spectra Database</a>, fino al laurenzio; per gli elementi successivi, valori calcolati riportati da PubChem.</li>
+        <li>Isotopi e abbondanze: <a href="https://www.ciaaw.org/isotopic-abundances.htm" rel="noopener">IUPAC CIAAW</a>; isotopi più stabili degli elementi radioattivi dalla valutazione NUBASE2020.</li>
+        <li>Storia della scoperta: ricostruita dalla cronologia delle scoperte degli elementi e dalle fonti che cita.</li>
+      </ul>
+    </section>
+  </article>
+</main>
+<div class="lente-tavola" id="lente" hidden aria-hidden="true"></div>
+
+<script>
+const ELEMENTI = [{"z":1,"s":"H","n":"Idrogeno","en":"Hydrogen","m":"1.0080","stab":true,"cat":"Non metallo","st":"Gas","conf":"1s¹","cf":"NIST","sub":[["1s",1]],"gusci":[1],"A":1,"N":0,"ab":"[0,99972; 0,99999]","t":null,"eneg":2.2,"r":120.0,"ie":13.5984,"ea":0.754,"ox":"+1, −1","mp":13.81,"bp":20.28,"d":8.988e-05,"p":1,"g":1,"b":"s","row":1,"col":1,"anno":"1766","chi":"Henry Cavendish","storia":"Già nel 1671 Robert Boyle ottenne un gas infiammabile versando acido diluito sulla limatura di ferro, senza capire che cosa fosse. Nel 1766 Henry Cavendish lo studiò a fondo e lo riconobbe come una sostanza a sé, che bruciando produce acqua. Il nome glielo diede Lavoisier nel 1783: dal greco, «generatore d'acqua».","usi":"Produzione di ammoniaca per i fertilizzanti, raffinazione del petrolio, celle a combustibile; liquido, è il propellente di molti razzi.","cur":"È l'elemento più abbondante dell'universo: circa tre quarti della massa della materia ordinaria. Le stelle, Sole compreso, brillano fondendo idrogeno in elio.","cpk":"FFFFFF"},{"z":2,"s":"He","n":"Elio","en":"Helium","m":"4.00260","stab":true,"cat":"Gas nobile","st":"Gas","conf":"1s²","cf":"NIST","sub":[["1s",2]],"gusci":[2],"A":4,"N":2,"ab":"0,999998","t":null,"eneg":null,"r":140.0,"ie":24.5874,"ea":null,"ox":"0","mp":0.95,"bp":4.22,"d":0.0001785,"p":1,"g":18,"b":"s","row":1,"col":18,"anno":"1868","chi":"Pierre Janssen e Norman Lockyer","storia":"Nel 1868, studiando la luce del Sole, Janssen e Lockyer notarono una riga gialla nello spettro che non apparteneva a nessun elemento noto. Lockyer lo chiamò elio, dal greco «helios», Sole. Sulla Terra fu trovato solo nel 1895, quando William Ramsay (e in modo indipendente Cleve e Langlet) lo liberò dal minerale cleveite.","usi":"Raffreddamento dei magneti delle risonanze magnetiche e degli esperimenti a bassissima temperatura, palloni e dirigibili, miscele respiratorie per i subacquei.","cur":"È l'unico elemento scoperto nello spazio prima che sulla Terra. A pressione normale non diventa solido nemmeno vicino allo zero assoluto.","cpk":"D9FFFF"},{"z":3,"s":"Li","n":"Litio","en":"Lithium","m":"7.0","stab":true,"cat":"Metallo alcalino","st":"Solido","conf":"[He] 2s¹","cf":"NIST","sub":[["1s",2],["2s",1]],"gusci":[2,1],"A":7,"N":4,"ab":"[0,922; 0,981]","t":null,"eneg":0.98,"r":182.0,"ie":5.3917,"ea":0.618,"ox":"+1","mp":453.65,"bp":1615.0,"d":0.534,"p":2,"g":1,"b":"s","row":2,"col":1,"anno":"1817","chi":"Johan August Arfwedson","storia":"Nel 1817 lo svedese Arfwedson, analizzando il minerale petalite, scoprì un nuovo metallo alcalino. Lo chiamarono litio, dal greco «lithos», pietra, perché era stato trovato in un minerale e non nelle ceneri delle piante come sodio e potassio. Nel 1821 William Brande lo isolò per elettrolisi.","usi":"Batterie ricaricabili di telefoni e auto elettriche, vetri e ceramiche resistenti al calore, grassi lubrificanti; alcuni suoi sali sono farmaci.","cur":"È il metallo meno denso di tutti: galleggia sull'acqua (con cui però reagisce) e perfino sull'olio.","cpk":"CC80FF"},{"z":4,"s":"Be","n":"Berillio","en":"Beryllium","m":"9.012183","stab":true,"cat":"Metallo alcalino-terroso","st":"Solido","conf":"[He] 2s²","cf":"NIST","sub":[["1s",2],["2s",2]],"gusci":[2,2],"A":9,"N":5,"ab":"1","t":null,"eneg":1.57,"r":153.0,"ie":9.3227,"ea":null,"ox":"+2","mp":1560.0,"bp":2744.0,"d":1.85,"p":2,"g":2,"b":"s","row":2,"col":2,"anno":"1798","chi":"Louis-Nicolas Vauquelin","storia":"Nel 1798 il francese Vauquelin scoprì un ossido sconosciuto nel berillo e nello smeraldo, che sono lo stesso minerale con colori diversi. Il metallo fu isolato solo nel 1828, in modo indipendente, da Friedrich Wöhler e Antoine Bussy.","usi":"Leghe rame-berillio per molle e per utensili che non fanno scintille, specchi del telescopio spaziale James Webb, finestre per i raggi X.","cur":"Smeraldo e acquamarina sono varietà di berillo. I composti del berillio hanno sapore dolce, ma sono tossici: un tempo l'elemento si chiamava «glucinio».","cpk":"C2FF00"},{"z":5,"s":"B","n":"Boro","en":"Boron","m":"10.81","stab":true,"cat":"Semimetallo","st":"Solido","conf":"[He] 2s² 2p¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",1]],"gusci":[2,3],"A":11,"N":6,"ab":"[0,796; 0,811]","t":null,"eneg":2.04,"r":192.0,"ie":8.298,"ea":0.277,"ox":"+3","mp":2348.0,"bp":4273.0,"d":2.37,"p":2,"g":13,"b":"p","row":2,"col":13,"anno":"1808","chi":"Gay-Lussac e Thénard; Humphry Davy","storia":"Il borace, un suo minerale, si usava da secoli per saldare i metalli e preparare smalti. Nel 1808 Joseph Louis Gay-Lussac e Louis Jacques Thénard a Parigi, e quasi nello stesso momento Humphry Davy a Londra, ottennero il boro, ancora impuro, partendo dall'acido borico. Il boro quasi puro fu preparato solo nel Novecento.","usi":"Vetro borosilicato resistente agli sbalzi di calore, fibre di vetro, detergenti, magneti al neodimio-ferro-boro, barre di controllo dei reattori nucleari.","cur":"È un micronutriente indispensabile per le piante. Il nitruro di boro cubico è uno dei materiali più duri dopo il diamante.","cpk":"FFB5B5"},{"z":6,"s":"C","n":"Carbonio","en":"Carbon","m":"12.011","stab":true,"cat":"Non metallo","st":"Solido","conf":"[He] 2s² 2p²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",2]],"gusci":[2,4],"A":12,"N":6,"ab":"[0,9884; 0,9904]","t":null,"eneg":2.55,"r":170.0,"ie":11.2603,"ea":1.263,"ox":"+4, +2, −4","mp":3823.0,"bp":4098.0,"d":2.267,"p":2,"g":14,"b":"p","row":2,"col":14,"anno":"Antichità","chi":"Noto dalla preistoria","storia":"Carbone e fuliggine si usano fin dalla preistoria, per esempio nelle pitture rupestri. Nel 1772 Lavoisier mostrò che diamante e carbone, bruciando, producono lo stesso gas, l'anidride carbonica: sono la stessa sostanza. Nel 1787 il carbonio entrò nella lista degli elementi di Lavoisier e dei suoi colleghi.","usi":"È la base della chimica della vita e dei combustibili; acciaio (ferro più un po' di carbonio), grafite delle matite e delle batterie, diamanti per gioielli e utensili da taglio, fibra di carbonio.","cur":"Esiste in forme molto diverse: diamante, grafite, grafene, fullereni e nanotubi. Il carbonio-14 radioattivo permette di datare reperti fino a circa 50 000 anni fa.","cpk":"909090"},{"z":7,"s":"N","n":"Azoto","en":"Nitrogen","m":"14.007","stab":true,"cat":"Non metallo","st":"Gas","conf":"[He] 2s² 2p³","cf":"NIST","sub":[["1s",2],["2s",2],["2p",3]],"gusci":[2,5],"A":14,"N":7,"ab":"[0,99578; 0,99663]","t":null,"eneg":3.04,"r":155.0,"ie":14.5341,"ea":null,"ox":"+5, +4, +3, +2, +1, −1, −2, −3","mp":63.15,"bp":77.36,"d":0.0012506,"p":2,"g":15,"b":"p","row":2,"col":15,"anno":"1772","chi":"Daniel Rutherford","storia":"Nel 1772 lo scozzese Daniel Rutherford tenne degli animali in un recipiente chiuso e poi tolse l'anidride carbonica: il gas rimasto non faceva più bruciare una candela né respirare un topo. Lo chiamò «aria nociva». Pochi anni dopo Lavoisier lo chiamò «azote», privo di vita.","usi":"Ammoniaca e fertilizzanti, azoto liquido per congelare e conservare cellule e alimenti, atmosfera protettiva nelle confezioni di cibo.","cur":"Costituisce circa il 78% dell'aria. È presente in tutte le proteine e nel DNA.","cpk":"3050F8"},{"z":8,"s":"O","n":"Ossigeno","en":"Oxygen","m":"15.999","stab":true,"cat":"Non metallo","st":"Gas","conf":"[He] 2s² 2p⁴","cf":"NIST","sub":[["1s",2],["2s",2],["2p",4]],"gusci":[2,6],"A":16,"N":8,"ab":"[0,99738; 0,99776]","t":null,"eneg":3.44,"r":152.0,"ie":13.6181,"ea":1.461,"ox":"−2","mp":54.36,"bp":90.2,"d":0.001429,"p":2,"g":16,"b":"p","row":2,"col":16,"anno":"1774","chi":"Carl Wilhelm Scheele e Joseph Priestley","storia":"Lo svedese Scheele lo preparò intorno al 1771 scaldando l'ossido di mercurio e alcuni nitrati, ma pubblicò solo nel 1777. L'inglese Joseph Priestley lo ottenne in modo indipendente nel 1774 e lo rese noto per primo. Fu Lavoisier a capire che era un elemento, responsabile della combustione e della respirazione, e a dargli il nome.","usi":"Respirazione negli ospedali e nelle immersioni, produzione dell'acciaio, saldatura e taglio dei metalli; liquido, è il comburente di molti razzi.","cur":"È l'elemento più abbondante, in massa, nella crosta terrestre e nel corpo umano. L'ossigeno liquido è azzurro ed è attratto da una calamita.","cpk":"FF0D0D"},{"z":9,"s":"F","n":"Fluoro","en":"Fluorine","m":"18.99840316","stab":true,"cat":"Alogeno","st":"Gas","conf":"[He] 2s² 2p⁵","cf":"NIST","sub":[["1s",2],["2s",2],["2p",5]],"gusci":[2,7],"A":19,"N":10,"ab":"1","t":null,"eneg":3.98,"r":135.0,"ie":17.4228,"ea":3.339,"ox":"−1","mp":53.53,"bp":85.03,"d":0.001696,"p":2,"g":17,"b":"p","row":2,"col":17,"anno":"1886","chi":"Henri Moissan","storia":"Già nel 1771 Scheele capì che la fluorite conteneva un acido sconosciuto, oggi chiamato acido fluoridrico. Isolare il fluoro fu difficilissimo e pericoloso, e diversi chimici si ferirono o si avvelenarono. Ci riuscì il francese Henri Moissan nel 1886, per elettrolisi a bassa temperatura; per questo ricevette il premio Nobel nel 1906.","usi":"Fluoruri nei dentifrici, Teflon delle padelle antiaderenti, gas refrigeranti, arricchimento dell'uranio.","cur":"È il più reattivo e il più elettronegativo di tutti gli elementi: reagisce perfino con alcuni gas nobili, come lo xeno.","cpk":"90E050"},{"z":10,"s":"Ne","n":"Neon","en":"Neon","m":"20.180","stab":true,"cat":"Gas nobile","st":"Gas","conf":"[He] 2s² 2p⁶","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6]],"gusci":[2,8],"A":20,"N":10,"ab":"0,9048","t":null,"eneg":null,"r":154.0,"ie":21.5645,"ea":null,"ox":"0","mp":24.56,"bp":27.07,"d":0.0008999,"p":2,"g":18,"b":"p","row":2,"col":18,"anno":"1898","chi":"William Ramsay e Morris Travers","storia":"Nel 1898 Ramsay e Travers liquefecero l'aria e la lasciarono evaporare lentamente, separando i gas in base alla temperatura di ebollizione. Dall'argon liquido ricavarono un gas nuovo che, attraversato dalla corrente, brillava di un rosso vivissimo. Lo chiamarono neon, «nuovo» in greco.","usi":"Insegne luminose, laser elio-neon, spie luminose; il neon liquido è un refrigerante.","cur":"Solo il neon puro dà la luce rosso-arancio: le insegne di altri colori usano altri gas o tubi rivestiti di polveri fluorescenti.","cpk":"B3E3F5"},{"z":11,"s":"Na","n":"Sodio","en":"Sodium","m":"22.9897693","stab":true,"cat":"Metallo alcalino","st":"Solido","conf":"[Ne] 3s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",1]],"gusci":[2,8,1],"A":23,"N":12,"ab":"1","t":null,"eneg":0.93,"r":227.0,"ie":5.1391,"ea":0.548,"ox":"+1","mp":370.95,"bp":1156.0,"d":0.97,"p":3,"g":1,"b":"s","row":3,"col":1,"anno":"1807","chi":"Humphry Davy","storia":"I sali di sodio, come il sale da cucina e la soda, si usano da sempre. Nel 1807 Humphry Davy fece passare la corrente elettrica nella soda caustica fusa e ottenne un metallo morbido e lucente, che reagiva violentemente con l'acqua. Il simbolo Na viene dal latino «natrium».","usi":"Sale da cucina (cloruro di sodio), bicarbonato, soda per vetro e saponi, lampioni gialli al sodio, raffreddamento di alcuni reattori nucleari.","cur":"È così morbido che si taglia con un coltello. Gli ioni sodio sono indispensabili per il funzionamento dei nervi.","cpk":"AB5CF2"},{"z":12,"s":"Mg","n":"Magnesio","en":"Magnesium","m":"24.305","stab":true,"cat":"Metallo alcalino-terroso","st":"Solido","conf":"[Ne] 3s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2]],"gusci":[2,8,2],"A":24,"N":12,"ab":"[0,7888; 0,7905]","t":null,"eneg":1.31,"r":173.0,"ie":7.6462,"ea":null,"ox":"+2","mp":923.0,"bp":1363.0,"d":1.74,"p":3,"g":2,"b":"s","row":3,"col":2,"anno":"1808","chi":"Humphry Davy","storia":"Nel 1755 lo scozzese Joseph Black dimostrò che la «magnesia alba» era una sostanza diversa dalla calce. Nel 1808 Davy isolò il metallo per elettrolisi. Il nome viene dalla Magnesia, una regione della Grecia.","usi":"Leghe leggere per auto, aerei e computer portatili, fuochi d'artificio e razzi di segnalazione, integratori e farmaci antiacidi.","cur":"Brucia con una luce bianca accecante, usata nei primi flash fotografici. Al centro di ogni molecola di clorofilla c'è un atomo di magnesio.","cpk":"8AFF00"},{"z":13,"s":"Al","n":"Alluminio","en":"Aluminum","m":"26.981538","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Ne] 3s² 3p¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",1]],"gusci":[2,8,3],"A":27,"N":14,"ab":"1","t":null,"eneg":1.61,"r":184.0,"ie":5.9858,"ea":0.441,"ox":"+3","mp":933.437,"bp":2792.0,"d":2.7,"p":3,"g":13,"b":"p","row":3,"col":13,"anno":"1825","chi":"Hans Christian Ørsted; Friedrich Wöhler","storia":"L'allume, un suo sale, era usato già nell'antichità per fissare i colori sui tessuti. Nel 1825 il danese Ørsted ottenne un po' di alluminio impuro, ma il risultato fu messo in dubbio; nel 1827 il tedesco Wöhler lo preparò senza ombra di dubbio. Nel 1886 Hall e Héroult inventarono il metodo elettrolitico che lo rese economico.","usi":"Lattine, fogli per alimenti, infissi, aerei, auto, cavi elettrici dell'alta tensione.","cur":"Prima del 1886 era più prezioso dell'oro: Napoleone III riservava le posate d'alluminio agli ospiti più importanti. Oggi è il metallo più abbondante della crosta terrestre.","cpk":"BFA6A6"},{"z":14,"s":"Si","n":"Silicio","en":"Silicon","m":"28.085","stab":true,"cat":"Semimetallo","st":"Solido","conf":"[Ne] 3s² 3p²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",2]],"gusci":[2,8,4],"A":28,"N":14,"ab":"[0,92191; 0,92318]","t":null,"eneg":1.9,"r":210.0,"ie":8.1517,"ea":1.385,"ox":"+4, +2, −4","mp":1687.0,"bp":3538.0,"d":2.3296,"p":3,"g":14,"b":"p","row":3,"col":14,"anno":"1823","chi":"Jöns Jacob Berzelius","storia":"La silice, cioè la sabbia e il quarzo, è nota da sempre. Lavoisier sospettava che contenesse un elemento sconosciuto e nel 1808 Davy confermò che era un composto. Nel 1823 lo svedese Berzelius ottenne finalmente il silicio come elemento.","usi":"Microchip e celle solari, vetro, cemento, ceramiche, siliconi per sigillanti e protesi.","cur":"Dopo l'ossigeno è l'elemento più abbondante della crosta terrestre. La Silicon Valley, in California, prende il nome da lui.","cpk":"F0C8A0"},{"z":15,"s":"P","n":"Fosforo","en":"Phosphorus","m":"30.97376200","stab":true,"cat":"Non metallo","st":"Solido","conf":"[Ne] 3s² 3p³","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",3]],"gusci":[2,8,5],"A":31,"N":16,"ab":"1","t":null,"eneg":2.19,"r":180.0,"ie":10.4867,"ea":0.746,"ox":"+5, +3, −3","mp":317.3,"bp":553.65,"d":1.82,"p":3,"g":15,"b":"p","row":3,"col":15,"anno":"1669","chi":"Hennig Brand","storia":"Nel 1669 l'alchimista di Amburgo Hennig Brand, cercando la pietra filosofale, fece evaporare e scaldare grandi quantità di urina. Ottenne una sostanza bianca che brillava al buio: il fosforo, «portatore di luce» in greco. È il primo elemento di cui conosciamo lo scopritore e la data della scoperta.","usi":"Fertilizzanti (fosfati), striscia dei fiammiferi (fosforo rosso), detersivi, acciai speciali.","cur":"Ossa e denti contengono fosfato di calcio e la «spina dorsale» del DNA è fatta di fosfati. Il fosforo bianco può incendiarsi da solo all'aria.","cpk":"FF8000"},{"z":16,"s":"S","n":"Zolfo","en":"Sulfur","m":"32.07","stab":true,"cat":"Non metallo","st":"Solido","conf":"[Ne] 3s² 3p⁴","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",4]],"gusci":[2,8,6],"A":32,"N":16,"ab":"[0,9441; 0,9529]","t":null,"eneg":2.58,"r":180.0,"ie":10.36,"ea":2.077,"ox":"+6, +4, −2","mp":388.36,"bp":717.75,"d":2.067,"p":3,"g":16,"b":"p","row":3,"col":16,"anno":"Antichità","chi":"Noto dall'antichità","storia":"Lo zolfo si trova puro vicino ai vulcani ed è conosciuto fin dall'antichità: gli Egizi lo usavano nei medicamenti e i Greci per le fumigazioni. Nel 1777 Lavoisier convinse la comunità scientifica che si trattava di un elemento.","usi":"Acido solforico (la sostanza chimica più prodotta al mondo), vulcanizzazione della gomma, fertilizzanti, fiammiferi, conservanti del vino.","cur":"Lo zolfo puro è quasi inodore: la puzza di uova marce è dell'acido solfidrico, un suo composto. Per secoli la Sicilia fu tra i maggiori produttori di zolfo al mondo.","cpk":"FFFF30"},{"z":17,"s":"Cl","n":"Cloro","en":"Chlorine","m":"35.45","stab":true,"cat":"Alogeno","st":"Gas","conf":"[Ne] 3s² 3p⁵","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",5]],"gusci":[2,8,7],"A":35,"N":18,"ab":"[0,755; 0,761]","t":null,"eneg":3.16,"r":175.0,"ie":12.9676,"ea":3.617,"ox":"+7, +5, +1, −1","mp":171.65,"bp":239.11,"d":0.003214,"p":3,"g":17,"b":"p","row":3,"col":17,"anno":"1774","chi":"Carl Wilhelm Scheele","storia":"Nel 1774 Scheele ottenne un gas giallo-verde facendo reagire l'acido cloridrico con il biossido di manganese, ma credeva che fosse un composto dell'ossigeno. Nel 1810 Humphry Davy dimostrò che era un elemento e lo chiamò cloro, dal greco «chloros», verde-giallo.","usi":"Disinfezione dell'acqua potabile e delle piscine, candeggina, PVC, produzione di molti farmaci.","cur":"È un gas tossico, usato come arma chimica nella Prima guerra mondiale. Legato al sodio forma il comune sale da cucina.","cpk":"1FF01F"},{"z":18,"s":"Ar","n":"Argon","en":"Argon","m":"39.9","stab":true,"cat":"Gas nobile","st":"Gas","conf":"[Ne] 3s² 3p⁶","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6]],"gusci":[2,8,8],"A":40,"N":22,"ab":"[0,936; 1,000]","t":null,"eneg":null,"r":188.0,"ie":15.7596,"ea":null,"ox":"0","mp":83.8,"bp":87.3,"d":0.0017837,"p":3,"g":18,"b":"p","row":3,"col":18,"anno":"1894","chi":"Lord Rayleigh e William Ramsay","storia":"Rayleigh si accorse che l'azoto estratto dall'aria era un po' più pesante di quello prodotto con le reazioni chimiche. Insieme a Ramsay scoprì che la differenza era dovuta a un gas sconosciuto che non reagiva con niente: lo chiamarono argon, «pigro» in greco. Fu il primo gas nobile isolato e valse il Nobel a entrambi nel 1904.","usi":"Atmosfera protettiva nella saldatura, lampadine a incandescenza, intercapedine delle finestre a doppio vetro.","cur":"È quasi l'1% dell'aria che respiriamo: più di venti volte l'anidride carbonica.","cpk":"80D1E3"},{"z":19,"s":"K","n":"Potassio","en":"Potassium","m":"39.098","stab":true,"cat":"Metallo alcalino","st":"Solido","conf":"[Ar] 4s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",1]],"gusci":[2,8,8,1],"A":39,"N":20,"ab":"0,932581","t":null,"eneg":0.82,"r":275.0,"ie":4.3407,"ea":0.501,"ox":"+1","mp":336.53,"bp":1032.0,"d":0.89,"p":4,"g":1,"b":"s","row":4,"col":1,"anno":"1807","chi":"Humphry Davy","storia":"Nel 1807 Davy fece passare la corrente nella potassa caustica fusa e vide comparire globuli di metallo che prendevano fuoco a contatto con l'acqua. Fu il primo metallo isolato per elettrolisi, pochi giorni prima del sodio. Il simbolo K viene dal latino «kalium».","usi":"Fertilizzanti, saponi morbidi, vetri speciali; il nitrato di potassio è un componente della polvere da sparo.","cur":"Il potassio è essenziale per cuore e muscoli. Una piccolissima parte è radioattiva (potassio-40): ogni persona è un po' radioattiva.","cpk":"8F40D4"},{"z":20,"s":"Ca","n":"Calcio","en":"Calcium","m":"40.08","stab":true,"cat":"Metallo alcalino-terroso","st":"Solido","conf":"[Ar] 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2]],"gusci":[2,8,8,2],"A":40,"N":20,"ab":"0,96941","t":null,"eneg":1.0,"r":231.0,"ie":6.1132,"ea":null,"ox":"+2","mp":1115.0,"bp":1757.0,"d":1.54,"p":4,"g":2,"b":"s","row":4,"col":2,"anno":"1808","chi":"Humphry Davy","storia":"La calce, cioè l'ossido di calcio, era usata dai Romani per le malte. Nel 1808 Davy isolò il metallo per elettrolisi di una miscela di calce e ossido di mercurio. Il nome viene dal latino «calx», calce.","usi":"Cemento e malte, gesso, marmo e calcare per l'edilizia, produzione dell'acciaio, integratori.","cur":"È il minerale più abbondante del corpo umano: le ossa di un adulto ne contengono circa un chilogrammo.","cpk":"3DFF00"},{"z":21,"s":"Sc","n":"Scandio","en":"Scandium","m":"44.95591","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d¹ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",1]],"gusci":[2,8,9,2],"A":45,"N":24,"ab":"1","t":null,"eneg":1.36,"r":211.0,"ie":6.5615,"ea":0.188,"ox":"+3","mp":1814.0,"bp":3109.0,"d":2.99,"p":4,"g":3,"b":"d","row":4,"col":3,"anno":"1879","chi":"Lars Fredrik Nilson","storia":"Nel 1871 Mendeleev aveva previsto l'esistenza di un elemento ancora sconosciuto, l'«eka-boro». Nel 1879 lo svedese Nilson lo trovò studiando le terre rare di minerali scandinavi e lo chiamò scandio, dalla Scandinavia. Le sue proprietà coincidevano con la previsione: un successo per la tavola periodica.","usi":"Leghe alluminio-scandio per telai di biciclette e parti di aerei, lampade ad alogenuri per gli stadi.","cur":"Il metallo puro fu ottenuto solo nel 1937, quasi sessant'anni dopo la scoperta.","cpk":"E6E6E6"},{"z":22,"s":"Ti","n":"Titanio","en":"Titanium","m":"47.87","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d² 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",2]],"gusci":[2,8,10,2],"A":48,"N":26,"ab":"0,7372","t":null,"eneg":1.54,"r":187.0,"ie":6.8281,"ea":0.079,"ox":"+4, +3, +2","mp":1941.0,"bp":3560.0,"d":4.5,"p":4,"g":4,"b":"d","row":4,"col":4,"anno":"1791","chi":"William Gregor","storia":"Nel 1791 il pastore e chimico inglese William Gregor trovò l'ossido di un metallo sconosciuto in una sabbia nera della Cornovaglia, l'ilmenite. Nel 1795 il tedesco Klaproth lo ritrovò in un altro minerale e lo chiamò titanio, dai Titani della mitologia greca. Il primo campione del metallo fu ottenuto nel 1875.","usi":"Aerei, protesi e impianti dentali, telai di biciclette e occhiali; il biossido di titanio è il pigmento bianco di vernici, carta, dentifrici e creme solari.","cur":"È resistente come molti acciai ma molto più leggero, non arrugginisce e il corpo umano lo tollera bene.","cpk":"BFC2C7"},{"z":23,"s":"V","n":"Vanadio","en":"Vanadium","m":"50.941","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d³ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",3]],"gusci":[2,8,11,2],"A":51,"N":28,"ab":"0,99750","t":null,"eneg":1.63,"r":179.0,"ie":6.7462,"ea":0.525,"ox":"+5, +4, +3, +2","mp":2183.0,"bp":3680.0,"d":6.0,"p":4,"g":5,"b":"d","row":4,"col":5,"anno":"1801","chi":"Andrés Manuel del Río; Nils Gabriel Sefström","storia":"Nel 1801 il mineralogista Andrés Manuel del Río, in Messico, trovò un nuovo metallo in un minerale di piombo, ma si convinse (sbagliando) che fosse cromo impuro. Nel 1830 lo svedese Sefström lo riscoprì e lo chiamò vanadio, da Vanadis, dea nordica della bellezza, per i bei colori dei suoi composti. Il metallo fu isolato da Henry Roscoe nel 1867.","usi":"Acciai per utensili e molle (cromo-vanadio), catalizzatore per produrre l'acido solforico, batterie a flusso per accumulare energia.","cur":"La Ford Modello T, la prima auto prodotta in grande serie, usava acciaio al vanadio, leggero e robusto.","cpk":"A6A6AB"},{"z":24,"s":"Cr","n":"Cromo","en":"Chromium","m":"51.996","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d⁵ 4s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",1],["3d",5]],"gusci":[2,8,13,1],"A":52,"N":28,"ab":"0,83789","t":null,"eneg":1.66,"r":189.0,"ie":6.7665,"ea":0.666,"ox":"+6, +3, +2","mp":2180.0,"bp":2944.0,"d":7.15,"p":4,"g":6,"b":"d","row":4,"col":6,"anno":"1797","chi":"Louis-Nicolas Vauquelin","storia":"Nel 1797 Vauquelin analizzò un minerale rosso della Siberia, la crocoite, e vi trovò un elemento nuovo; l'anno dopo isolò il metallo scaldandone l'ossido con il carbone. Lo chiamò cromo, dal greco «chroma», colore, perché i suoi composti sono molto colorati.","usi":"Acciaio inossidabile, cromature lucide, pigmenti, concia delle pelli.","cur":"Il verde dello smeraldo e il rosso del rubino sono dovuti a piccole tracce di cromo.","cpk":"8A99C7"},{"z":25,"s":"Mn","n":"Manganese","en":"Manganese","m":"54.93804","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d⁵ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",5]],"gusci":[2,8,13,2],"A":55,"N":30,"ab":"1","t":null,"eneg":1.55,"r":197.0,"ie":7.434,"ea":null,"ox":"+7, +4, +3, +2","mp":1519.0,"bp":2334.0,"d":7.3,"p":4,"g":7,"b":"d","row":4,"col":7,"anno":"1774","chi":"Johan Gottlieb Gahn","storia":"Il biossido di manganese, la pirolusite, si usava fin dalla preistoria come pigmento nero e più tardi per schiarire il vetro. Gli svedesi Bergman e Scheele capirono che conteneva un nuovo metallo, e nel 1774 il loro collega Gahn lo isolò scaldando il minerale con il carbone.","usi":"Acciaio (lo rende più duro e tenace), leghe per lattine d'alluminio, pile alcaline, fertilizzanti.","cur":"Alcuni neri delle pitture rupestri preistoriche, come quelle di Lascaux, sono ossidi di manganese.","cpk":"9C7AC7"},{"z":26,"s":"Fe","n":"Ferro","en":"Iron","m":"55.84","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d⁶ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",6]],"gusci":[2,8,14,2],"A":56,"N":30,"ab":"0,91754","t":null,"eneg":1.83,"r":194.0,"ie":7.9025,"ea":0.163,"ox":"+3, +2","mp":1811.0,"bp":3134.0,"d":7.874,"p":4,"g":8,"b":"d","row":4,"col":8,"anno":"Antichità","chi":"Noto dall'antichità","storia":"I più antichi oggetti di ferro, perline egizie di oltre 5000 anni fa, erano fatti con ferro caduto dal cielo nei meteoriti. L'estrazione del ferro dai minerali si diffuse lentamente e, intorno al 1200 a.C., diede inizio all'Età del ferro.","usi":"Acciaio per edifici, ponti, auto, navi e utensili: è di gran lunga il metallo più usato.","cur":"Il nucleo della Terra è fatto in gran parte di ferro. Nel sangue, il ferro dell'emoglobina trasporta l'ossigeno.","cpk":"E06633"},{"z":27,"s":"Co","n":"Cobalto","en":"Cobalt","m":"58.93319","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d⁷ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",7]],"gusci":[2,8,15,2],"A":59,"N":32,"ab":"1","t":null,"eneg":1.88,"r":192.0,"ie":7.881,"ea":0.661,"ox":"+3, +2","mp":1768.0,"bp":3200.0,"d":8.86,"p":4,"g":9,"b":"d","row":4,"col":9,"anno":"1735","chi":"Georg Brandt","storia":"I minatori tedeschi chiamavano «kobold», folletto, un minerale che sembrava prezioso ma che, fuso, liberava fumi velenosi di arsenico. Intorno al 1735 lo svedese Georg Brandt dimostrò che il blu che quel minerale dava al vetro era dovuto a un metallo nuovo e non al bismuto, come si credeva.","usi":"Batterie al litio, superleghe per motori a reazione, magneti, pigmento blu per vetri e ceramiche; il cobalto-60 si usa in radioterapia.","cur":"Al centro della vitamina B12 c'è un atomo di cobalto.","cpk":"F090A0"},{"z":28,"s":"Ni","n":"Nichel","en":"Nickel","m":"58.693","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d⁸ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",8]],"gusci":[2,8,16,2],"A":58,"N":30,"ab":"0,680769","t":null,"eneg":1.91,"r":163.0,"ie":7.6399,"ea":1.156,"ox":"+3, +2","mp":1728.0,"bp":3186.0,"d":8.912,"p":4,"g":10,"b":"d","row":4,"col":10,"anno":"1751","chi":"Axel Fredrik Cronstedt","storia":"I minatori sassoni chiamavano «Kupfernickel», rame del diavolo, un minerale rossastro da cui non riuscivano a estrarre il rame. Nel 1751 lo svedese Cronstedt scoprì che conteneva un metallo nuovo e lo chiamò nichel.","usi":"Acciaio inossidabile, monete, batterie ricaricabili, placcature, superleghe.","cur":"Il ferro dei meteoriti contiene quasi sempre nichel, e anche il nucleo della Terra è una lega di ferro e nichel.","cpk":"50D050"},{"z":29,"s":"Cu","n":"Rame","en":"Copper","m":"63.55","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d¹⁰ 4s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",1],["3d",10]],"gusci":[2,8,18,1],"A":63,"N":34,"ab":"0,6915","t":null,"eneg":1.9,"r":140.0,"ie":7.7264,"ea":1.228,"ox":"+2, +1","mp":1357.77,"bp":2835.0,"d":8.933,"p":4,"g":11,"b":"d","row":4,"col":11,"anno":"Antichità","chi":"Noto dalla preistoria","storia":"Il rame si trova talvolta puro in natura ed è stato uno dei primi metalli lavorati, circa 10 000 anni fa. Fuso insieme allo stagno diede il bronzo, che ha dato il nome a un'epoca intera. Il simbolo Cu viene dal latino «cuprum», metallo di Cipro, isola famosa per le sue miniere.","usi":"Cavi e circuiti elettrici, tubature, motori, monete; è la base di leghe come bronzo e ottone.","cur":"La Statua della Libertà è rivestita di rame: il suo colore verde è la patina che il rame forma all'aria.","cpk":"C88033"},{"z":30,"s":"Zn","n":"Zinco","en":"Zinc","m":"65.4","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Ar] 3d¹⁰ 4s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10]],"gusci":[2,8,18,2],"A":64,"N":34,"ab":"0,4917","t":null,"eneg":1.65,"r":139.0,"ie":9.3942,"ea":null,"ox":"+2","mp":692.68,"bp":1180.0,"d":7.134,"p":4,"g":12,"b":"d","row":4,"col":12,"anno":"Antichità","chi":"Metallurghi indiani","storia":"In India lo zinco si estraeva e si usava da secoli, soprattutto nell'ottone, una lega con il rame. In Europa Paracelso lo descrisse come un metallo distinto nel 1526; fu isolato dall'ossido nel 1668 e studiato a fondo dal tedesco Andreas Marggraf nel 1746.","usi":"Zincatura per proteggere l'acciaio dalla ruggine, ottone, pile, creme solari e pomate (ossido di zinco).","cur":"È indispensabile per il funzionamento di centinaia di enzimi del nostro corpo.","cpk":"7D80B0"},{"z":31,"s":"Ga","n":"Gallio","en":"Gallium","m":"69.72","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Ar] 3d¹⁰ 4s² 4p¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",1]],"gusci":[2,8,18,3],"A":69,"N":38,"ab":"0,60108","t":null,"eneg":1.81,"r":187.0,"ie":5.9993,"ea":0.3,"ox":"+3","mp":302.91,"bp":2477.0,"d":5.91,"p":4,"g":13,"b":"p","row":4,"col":13,"anno":"1875","chi":"Paul-Émile Lecoq de Boisbaudran","storia":"Mendeleev aveva previsto un elemento sotto l'alluminio, l'«eka-alluminio». Nel 1875 il francese Lecoq de Boisbaudran vide nuove righe violette nello spettro di un minerale di zinco e scoprì il gallio, dal latino «Gallia», Francia. Nel 1878 ne ottenne il metallo per elettrolisi.","usi":"LED, laser dei lettori ottici, celle solari ad alta efficienza, chip per la telefonia (arseniuro e nitruro di gallio).","cur":"Fonde a circa 30 °C: si scioglie in mano. Mendeleev scrisse a Lecoq che la densità che aveva misurato era sbagliata, e la misura rifatta gli diede ragione.","cpk":"C28F8F"},{"z":32,"s":"Ge","n":"Germanio","en":"Germanium","m":"72.63","stab":true,"cat":"Semimetallo","st":"Solido","conf":"[Ar] 3d¹⁰ 4s² 4p²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",2]],"gusci":[2,8,18,4],"A":74,"N":42,"ab":"0,3652","t":null,"eneg":2.01,"r":211.0,"ie":7.8994,"ea":1.35,"ox":"+4, +2","mp":1211.4,"bp":3106.0,"d":5.323,"p":4,"g":14,"b":"p","row":4,"col":14,"anno":"1886","chi":"Clemens Winkler","storia":"Nel 1886 il tedesco Winkler analizzò un minerale d'argento, l'argirodite, e trovò che all'appello mancava circa il 7% della massa: c'era un elemento sconosciuto. Lo chiamò germanio, dalla Germania. Corrispondeva quasi perfettamente all'«eka-silicio» previsto da Mendeleev.","usi":"Fibre ottiche, lenti per visori e telecamere a infrarossi, elettronica ad alta frequenza.","cur":"Il primo transistor della storia, costruito nei Bell Labs nel 1947, era di germanio.","cpk":"668F8F"},{"z":33,"s":"As","n":"Arsenico","en":"Arsenic","m":"74.92159","stab":true,"cat":"Semimetallo","st":"Solido","conf":"[Ar] 3d¹⁰ 4s² 4p³","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",3]],"gusci":[2,8,18,5],"A":75,"N":42,"ab":"1","t":null,"eneg":2.18,"r":185.0,"ie":9.7886,"ea":0.81,"ox":"+5, +3, −3","mp":1090.0,"bp":887.0,"d":5.776,"p":4,"g":15,"b":"p","row":4,"col":15,"anno":"Antichità","chi":"Noto dall'antichità","storia":"I composti dell'arsenico, come l'orpimento giallo, erano usati come pigmenti e come veleni fin dall'antichità. Gli alchimisti ne descrissero la forma metallica, e nel 1641 Johann Schröder ne pubblicò una preparazione sicura. Nel 1787 Lavoisier lo inserì tra gli elementi.","usi":"Semiconduttori (arseniuro di gallio), un tempo pesticidi e conservanti del legno; un suo composto è usato per curare un tipo di leucemia.","cur":"Per secoli fu un veleno temuto perché quasi insapore e difficile da scoprire, finché nel 1836 il test di Marsh permise di riconoscerlo.","cpk":"BD80E3"},{"z":34,"s":"Se","n":"Selenio","en":"Selenium","m":"78.97","stab":true,"cat":"Non metallo","st":"Solido","conf":"[Ar] 3d¹⁰ 4s² 4p⁴","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",4]],"gusci":[2,8,18,6],"A":80,"N":46,"ab":"0,4980","t":null,"eneg":2.55,"r":190.0,"ie":9.7524,"ea":2.021,"ox":"+6, +4, −2","mp":493.65,"bp":958.0,"d":4.809,"p":4,"g":16,"b":"p","row":4,"col":16,"anno":"1817","chi":"Jöns Jacob Berzelius e Johan Gottlieb Gahn","storia":"Nel 1817 Berzelius e Gahn, studiando i residui di una fabbrica svedese di acido solforico, trovarono una sostanza simile al tellurio. Capirono che era un elemento nuovo e lo chiamarono selenio, da «Selene», la Luna, perché il tellurio porta il nome della Terra.","usi":"Vetro (lo decolora o lo colora di rosso), celle fotoelettriche, integratori, un tempo tamburi delle fotocopiatrici.","cur":"Conduce l'elettricità molto meglio quando è illuminato: fu alla base dei primi esperimenti per trasmettere immagini a distanza.","cpk":"FFA100"},{"z":35,"s":"Br","n":"Bromo","en":"Bromine","m":"79.90","stab":true,"cat":"Alogeno","st":"Liquido","conf":"[Ar] 3d¹⁰ 4s² 4p⁵","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",5]],"gusci":[2,8,18,7],"A":79,"N":44,"ab":"[0,505; 0,508]","t":null,"eneg":2.96,"r":183.0,"ie":11.8138,"ea":3.365,"ox":"+5, +1, −1","mp":265.95,"bp":331.95,"d":3.11,"p":4,"g":17,"b":"p","row":4,"col":17,"anno":"1826","chi":"Antoine-Jérôme Balard; Carl Löwig","storia":"Nel 1825-1826, in modo indipendente, il francese Balard (dalle acque delle saline di Montpellier) e il tedesco Löwig (da una sorgente di acqua minerale) ottennero un liquido rosso-bruno dall'odore pungente. Balard pubblicò per primo; il nome viene dal greco «bromos», fetore.","usi":"Ritardanti di fiamma per plastiche e tessuti, disinfezione delle piscine, un tempo pellicole fotografiche (bromuro d'argento).","cur":"Insieme al mercurio è l'unico elemento liquido a temperatura ambiente.","cpk":"A62929"},{"z":36,"s":"Kr","n":"Kripton","en":"Krypton","m":"83.80","stab":true,"cat":"Gas nobile","st":"Gas","conf":"[Ar] 3d¹⁰ 4s² 4p⁶","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6]],"gusci":[2,8,18,8],"A":84,"N":48,"ab":"0,56987","t":null,"eneg":3.0,"r":202.0,"ie":13.9996,"ea":null,"ox":"0","mp":115.79,"bp":119.93,"d":0.003733,"p":4,"g":18,"b":"p","row":4,"col":18,"anno":"1898","chi":"William Ramsay e Morris Travers","storia":"Nel maggio 1898 Ramsay e Travers lo trovarono nel residuo lasciato dall'evaporazione dell'aria liquida, poche settimane prima del neon. Lo chiamarono kripton, dal greco «kryptos», nascosto.","usi":"Lampade e flash fotografici ad alta potenza, finestre isolanti, alcuni laser.","cur":"Dal 1960 al 1983 il metro era definito in base alla lunghezza d'onda di una luce arancione emessa dal kripton-86.","cpk":"5CB8D1"},{"z":37,"s":"Rb","n":"Rubidio","en":"Rubidium","m":"85.468","stab":true,"cat":"Metallo alcalino","st":"Solido","conf":"[Kr] 5s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",1]],"gusci":[2,8,18,8,1],"A":85,"N":48,"ab":"0,7217","t":null,"eneg":0.82,"r":303.0,"ie":4.1771,"ea":0.468,"ox":"+1","mp":312.46,"bp":961.0,"d":1.53,"p":5,"g":1,"b":"s","row":5,"col":1,"anno":"1861","chi":"Robert Bunsen e Gustav Kirchhoff","storia":"Nel 1861 Bunsen e Kirchhoff, che avevano appena inventato lo spettroscopio, analizzarono il minerale lepidolite e videro due righe rosso scuro mai osservate. Chiamarono il nuovo elemento rubidio, dal latino «rubidus», rosso cupo. Bunsen ne isolò il metallo intorno al 1863.","usi":"Orologi atomici (anche a bordo dei satelliti GPS), ricerca sugli atomi ultrafreddi, fotocellule.","cur":"Fonde a 39 °C e all'aria si incendia da solo.","cpk":"702EB0"},{"z":38,"s":"Sr","n":"Stronzio","en":"Strontium","m":"87.6","stab":true,"cat":"Metallo alcalino-terroso","st":"Solido","conf":"[Kr] 5s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2]],"gusci":[2,8,18,8,2],"A":88,"N":50,"ab":"0,8258","t":null,"eneg":0.95,"r":249.0,"ie":5.6949,"ea":null,"ox":"+2","mp":1050.0,"bp":1655.0,"d":2.64,"p":5,"g":2,"b":"s","row":5,"col":2,"anno":"1790","chi":"Adair Crawford","storia":"Nel 1790 il medico Adair Crawford notò che un minerale trovato vicino al villaggio scozzese di Strontian si comportava in modo diverso dai minerali di bario: doveva contenere una nuova «terra». Nel 1808 Davy isolò il metallo per elettrolisi.","usi":"Fuochi d'artificio e razzi di segnalazione rossi, magneti in ferrite, dentifrici per denti sensibili.","cur":"Lo stronzio-90 prodotto dalle esplosioni nucleari è pericoloso perché il corpo lo scambia per calcio e lo deposita nelle ossa.","cpk":"00FF00"},{"z":39,"s":"Y","n":"Ittrio","en":"Yttrium","m":"88.9058","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d¹ 5s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",1]],"gusci":[2,8,18,9,2],"A":89,"N":50,"ab":"1","t":null,"eneg":1.22,"r":219.0,"ie":6.2173,"ea":0.307,"ox":"+3","mp":1795.0,"bp":3618.0,"d":4.47,"p":5,"g":3,"b":"d","row":5,"col":3,"anno":"1794","chi":"Johan Gadolin","storia":"Nel 1787 un ufficiale svedese trovò un minerale nero e pesante in una cava vicino al villaggio di Ytterby. Nel 1794 il finlandese Gadolin vi scoprì una nuova «terra», l'ittria. Wöhler annunciò di aver isolato il metallo nel 1828, ma il primo campione corretto fu ottenuto da Heinrich Rose nel 1843.","usi":"LED bianchi e fosfori rossi dei vecchi schermi, laser YAG, superconduttori ad alta temperatura.","cur":"Dalla cava di Ytterby prendono nome quattro elementi: ittrio, itterbio, terbio ed erbio.","cpk":"94FFFF"},{"z":40,"s":"Zr","n":"Zirconio","en":"Zirconium","m":"91.22","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d² 5s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",2]],"gusci":[2,8,18,10,2],"A":90,"N":50,"ab":"0,5147","t":null,"eneg":1.33,"r":186.0,"ie":6.6341,"ea":0.426,"ox":"+4","mp":2128.0,"bp":4682.0,"d":6.52,"p":5,"g":4,"b":"d","row":5,"col":4,"anno":"1789","chi":"Martin Heinrich Klaproth","storia":"Lo zircone è una gemma conosciuta fin dall'antichità. Nel 1789 il tedesco Klaproth vi scoprì l'ossido di un elemento nuovo. Il metallo, ancora impuro, fu isolato da Berzelius nel 1824.","usi":"Rivestimento del combustibile nei reattori nucleari, ceramiche dentali, zirconia cubica (imitazione del diamante).","cur":"I cristalli di zircone sono i minerali più antichi trovati sulla Terra: alcuni hanno circa 4,4 miliardi di anni.","cpk":"94E0E0"},{"z":41,"s":"Nb","n":"Niobio","en":"Niobium","m":"92.9064","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d⁴ 5s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",1],["4d",4]],"gusci":[2,8,18,12,1],"A":93,"N":52,"ab":"1","t":null,"eneg":1.6,"r":207.0,"ie":6.7589,"ea":0.893,"ox":"+5, +3","mp":2750.0,"bp":5017.0,"d":8.57,"p":5,"g":5,"b":"d","row":5,"col":5,"anno":"1801","chi":"Charles Hatchett","storia":"Nel 1801 l'inglese Hatchett analizzò un minerale americano conservato al British Museum e scoprì un elemento che chiamò columbio. Per decenni fu confuso con il tantalio, finché nel 1844 Heinrich Rose dimostrò che erano diversi e lo chiamò niobio, da Niobe, figlia di Tantalo.","usi":"Acciai per gasdotti e automobili, magneti superconduttori (risonanze magnetiche, acceleratore LHC del CERN), gioielli.","cur":"Il nome niobio divenne ufficiale solo nel 1949: negli Stati Uniti molti continuarono a chiamarlo columbio.","cpk":"73C2C9"},{"z":42,"s":"Mo","n":"Molibdeno","en":"Molybdenum","m":"96.0","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d⁵ 5s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",1],["4d",5]],"gusci":[2,8,18,13,1],"A":98,"N":56,"ab":"0,24292","t":null,"eneg":2.16,"r":209.0,"ie":7.0924,"ea":0.746,"ox":"+6","mp":2896.0,"bp":4912.0,"d":10.2,"p":5,"g":6,"b":"d","row":5,"col":6,"anno":"1778","chi":"Carl Wilhelm Scheele","storia":"Per secoli la molibdenite fu confusa con la grafite e con i minerali di piombo: il nome viene dal greco «molybdos», piombo. Nel 1778 Scheele dimostrò che conteneva un elemento nuovo, e pochi anni dopo lo svedese Peter Jacob Hjelm riuscì a isolare il metallo.","usi":"Acciai ad alta resistenza, lubrificanti (bisolfuro di molibdeno), catalizzatori per la raffinazione del petrolio.","cur":"È indispensabile ai batteri che catturano l'azoto dall'aria, e quindi alla fertilità del suolo.","cpk":"54B5B5"},{"z":43,"s":"Tc","n":"Tecnezio","en":"Technetium","m":"97.90721","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d⁵ 5s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",5]],"gusci":[2,8,18,13,2],"A":98,"N":55,"ab":null,"t":"4,2 milioni di anni","eneg":1.9,"r":209.0,"ie":7.1194,"ea":0.55,"ox":"+7, +6, +4","mp":2430.0,"bp":4538.0,"d":11.0,"p":5,"g":7,"b":"d","row":5,"col":7,"anno":"1937","chi":"Carlo Perrier ed Emilio Segrè","storia":"Mendeleev aveva lasciato un posto vuoto per l'«eka-manganese», ma nessuno riusciva a trovarlo in natura. Nel 1937, a Palermo, gli italiani Perrier e Segrè lo scoprirono in una lamina di molibdeno bombardata nel ciclotrone di Berkeley. Fu il primo elemento prodotto artificialmente: tecnezio viene dal greco «technetos», artificiale.","usi":"Il tecnezio-99m è il radioisotopo più usato in medicina nucleare: serve a decine di milioni di esami diagnostici ogni anno.","cur":"Tutti i suoi isotopi sono radioattivi. È stato osservato in alcune stelle giganti rosse: la prova che le stelle fabbricano nuovi elementi.","cpk":"3B9E9E"},{"z":44,"s":"Ru","n":"Rutenio","en":"Ruthenium","m":"101.1","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d⁷ 5s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",1],["4d",7]],"gusci":[2,8,18,15,1],"A":102,"N":58,"ab":"0,3155","t":null,"eneg":2.2,"r":207.0,"ie":7.3605,"ea":1.05,"ox":"+3","mp":2607.0,"bp":4423.0,"d":12.1,"p":5,"g":8,"b":"d","row":5,"col":8,"anno":"1844","chi":"Karl Ernst Claus","storia":"Nel 1844 Karl Claus, professore all'università di Kazan', studiò i residui della lavorazione del platino degli Urali e ne isolò un metallo nuovo. Lo chiamò rutenio, da «Ruthenia», nome latino della Russia.","usi":"Contatti elettrici resistenti all'usura, dischi rigidi, catalizzatori, leghe con platino e palladio.","cur":"È uno dei metalli più rari della crosta terrestre.","cpk":"248F8F"},{"z":45,"s":"Rh","n":"Rodio","en":"Rhodium","m":"102.9055","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d⁸ 5s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",1],["4d",8]],"gusci":[2,8,18,16,1],"A":103,"N":58,"ab":"1","t":null,"eneg":2.28,"r":195.0,"ie":7.4589,"ea":1.137,"ox":"+3","mp":2237.0,"bp":3968.0,"d":12.4,"p":5,"g":9,"b":"d","row":5,"col":9,"anno":"1804","chi":"William Hyde Wollaston","storia":"Tra il 1803 e il 1804 l'inglese Wollaston, sciogliendo platino grezzo sudamericano, ottenne un sale di colore rosa e da questo un metallo nuovo. Lo chiamò rodio, dal greco «rhodon», rosa.","usi":"Marmitte catalitiche delle auto (elimina gli ossidi di azoto), rivestimenti brillanti di gioielli e specchi.","cur":"È uno dei metalli più costosi al mondo, spesso più dell'oro.","cpk":"0A7D8C"},{"z":46,"s":"Pd","n":"Palladio","en":"Palladium","m":"106.4","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d¹⁰","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["4d",10]],"gusci":[2,8,18,18],"A":106,"N":60,"ab":"0,2733","t":null,"eneg":2.2,"r":202.0,"ie":8.3368,"ea":0.557,"ox":"+3, +2","mp":1828.05,"bp":3236.0,"d":12.0,"p":5,"g":10,"b":"d","row":5,"col":10,"anno":"1802","chi":"William Hyde Wollaston","storia":"Nel 1802 Wollaston isolò dal platino grezzo un nuovo metallo e lo chiamò palladio, dall'asteroide Pallade scoperto poco prima. Invece di pubblicare la scoperta, lo mise in vendita anonimamente in un negozio di Londra, suscitando molti sospetti; rivelò di esserne lo scopritore solo nel 1805.","usi":"Marmitte catalitiche, componenti elettronici, odontoiatria, gioielli in oro bianco.","cur":"A temperatura ambiente può assorbire una quantità di idrogeno pari a circa 900 volte il proprio volume.","cpk":"6985"},{"z":47,"s":"Ag","n":"Argento","en":"Silver","m":"107.868","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d¹⁰ 5s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",1],["4d",10]],"gusci":[2,8,18,18,1],"A":107,"N":60,"ab":"0,51839","t":null,"eneg":1.93,"r":172.0,"ie":7.5762,"ea":1.302,"ox":"+1","mp":1234.93,"bp":2435.0,"d":10.501,"p":5,"g":11,"b":"d","row":5,"col":11,"anno":"Antichità","chi":"Noto dall'antichità","storia":"L'argento si estrae da più di 5000 anni: le prime miniere importanti erano in Anatolia, l'odierna Turchia. Tutte le civiltà antiche lo usarono per monete, gioielli e vasellame. Il simbolo Ag viene dal latino «argentum».","usi":"Contatti elettrici, pannelli solari, gioielli, posate, specchi; alcuni suoi composti si usano come antibatterici.","cur":"È il miglior conduttore di elettricità e di calore fra tutti i metalli. L'Argentina prende il nome dall'argento.","cpk":"C0C0C0"},{"z":48,"s":"Cd","n":"Cadmio","en":"Cadmium","m":"112.41","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Kr] 4d¹⁰ 5s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10]],"gusci":[2,8,18,18,2],"A":114,"N":66,"ab":"0,28754","t":null,"eneg":1.69,"r":158.0,"ie":8.9938,"ea":null,"ox":"+2","mp":594.22,"bp":1040.0,"d":8.69,"p":5,"g":12,"b":"d","row":5,"col":12,"anno":"1817","chi":"Friedrich Stromeyer","storia":"Nel 1817 il tedesco Stromeyer, ispettore delle farmacie di Hannover, notò che un campione di ossido di zinco cambiava colore se scaldato, pur non contenendo ferro: c'era un elemento nuovo. Quasi negli stessi mesi lo trovarono anche Hermann e Roloff.","usi":"Celle solari al tellururo di cadmio, barre di controllo dei reattori; un tempo batterie nichel-cadmio e pigmenti gialli e rossi.","cur":"È molto tossico: nel Novecento l'inquinamento da cadmio causò in Giappone la grave malattia «itai-itai».","cpk":"FFD98F"},{"z":49,"s":"In","n":"Indio","en":"Indium","m":"114.82","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Kr] 4d¹⁰ 5s² 5p¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",1]],"gusci":[2,8,18,18,3],"A":115,"N":66,"ab":"0,95719","t":null,"eneg":1.78,"r":193.0,"ie":5.7864,"ea":0.3,"ox":"+3","mp":429.75,"bp":2345.0,"d":7.31,"p":5,"g":13,"b":"p","row":5,"col":13,"anno":"1863","chi":"Ferdinand Reich e Theodor Richter","storia":"Nel 1863 Reich, che era daltonico, chiese al suo assistente Richter di osservare allo spettroscopio un minerale di zinco. Richter vide una brillante riga color indaco: era un elemento nuovo, chiamato appunto indio. L'anno dopo ne isolarono il metallo.","usi":"Schermi touch e display (ossido di indio-stagno, trasparente e conduttore), saldature, LED.","cur":"È così morbido che si riga con un'unghia, e quando lo si piega emette un caratteristico scricchiolio.","cpk":"A67573"},{"z":50,"s":"Sn","n":"Stagno","en":"Tin","m":"118.71","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Kr] 4d¹⁰ 5s² 5p²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",2]],"gusci":[2,8,18,18,4],"A":120,"N":70,"ab":"0,3258","t":null,"eneg":1.96,"r":217.0,"ie":7.3439,"ea":1.2,"ox":"+4, +2","mp":505.08,"bp":2875.0,"d":7.287,"p":5,"g":14,"b":"p","row":5,"col":14,"anno":"Antichità","chi":"Noto dall'antichità","storia":"Più di 5000 anni fa si scoprì che, fondendolo con il rame, si otteneva il bronzo, molto più duro: iniziò l'Età del bronzo. Lo stagno era così prezioso che i mercanti dell'antichità lo trasportavano per migliaia di chilometri. Il simbolo Sn viene dal latino «stannum».","usi":"Saldature elettroniche, latta (acciaio stagnato) per lattine, bronzo, produzione del vetro piano.","cur":"Sotto i 13 °C lo stagno può trasformarsi lentamente in una polvere grigia: è la «peste dello stagno».","cpk":"668080"},{"z":51,"s":"Sb","n":"Antimonio","en":"Antimony","m":"121.76","stab":true,"cat":"Semimetallo","st":"Solido","conf":"[Kr] 4d¹⁰ 5s² 5p³","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",3]],"gusci":[2,8,18,18,5],"A":121,"N":70,"ab":"0,5721","t":null,"eneg":2.05,"r":206.0,"ie":8.6084,"ea":1.07,"ox":"+5, +3, −3","mp":903.78,"bp":1860.0,"d":6.685,"p":5,"g":15,"b":"p","row":5,"col":15,"anno":"Antichità","chi":"Noto dall'antichità","storia":"Gli antichi Egizi usavano il suo solfuro, la stibnite, come cosmetico nero per gli occhi. In Mesopotamia è stato trovato un oggetto di antimonio quasi puro di circa 5000 anni fa. Il simbolo Sb viene dal latino «stibium».","usi":"Ritardanti di fiamma, leghe per le batterie al piombo, semiconduttori.","cur":"Isaac Newton dedicò molti dei suoi esperimenti di alchimia all'antimonio.","cpk":"9E63B5"},{"z":52,"s":"Te","n":"Tellurio","en":"Tellurium","m":"127.6","stab":true,"cat":"Semimetallo","st":"Solido","conf":"[Kr] 4d¹⁰ 5s² 5p⁴","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",4]],"gusci":[2,8,18,18,6],"A":130,"N":78,"ab":"0,3408","t":null,"eneg":2.1,"r":206.0,"ie":9.0098,"ea":1.971,"ox":"+6, +4, −2","mp":722.66,"bp":1261.0,"d":6.232,"p":5,"g":16,"b":"p","row":5,"col":16,"anno":"1782","chi":"Franz-Joseph Müller von Reichenstein","storia":"Nel 1782 Müller von Reichenstein, ispettore minerario in Transilvania, trovò in un minerale d'oro una sostanza che non riusciva a identificare. Nel 1798 Klaproth confermò che era un elemento nuovo e lo chiamò tellurio, dal latino «tellus», Terra.","usi":"Celle solari al tellururo di cadmio, dispositivi termoelettrici, leghe più facili da lavorare.","cur":"Chi ne assorbe anche piccole quantità ha un alito che sa d'aglio per settimane.","cpk":"D47A00"},{"z":53,"s":"I","n":"Iodio","en":"Iodine","m":"126.9045","stab":true,"cat":"Alogeno","st":"Solido","conf":"[Kr] 4d¹⁰ 5s² 5p⁵","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",5]],"gusci":[2,8,18,18,7],"A":127,"N":74,"ab":"1","t":null,"eneg":2.66,"r":198.0,"ie":10.4513,"ea":3.059,"ox":"+7, +5, +1, −1","mp":386.85,"bp":457.55,"d":4.93,"p":5,"g":17,"b":"p","row":5,"col":17,"anno":"1811","chi":"Bernard Courtois","storia":"Durante le guerre napoleoniche la Francia aveva bisogno di salnitro per la polvere da sparo e lo ricavava anche dalle ceneri delle alghe. Nel 1811 Courtois aggiunse troppo acido a queste ceneri e vide salire vapori violetti che si condensavano in cristalli scuri. Il nome viene dal greco «iodes», violetto.","usi":"Disinfettanti (tintura di iodio), sale iodato, mezzi di contrasto per radiografie e TAC.","cur":"La tiroide ne ha bisogno per produrre i suoi ormoni: per questo si consiglia il sale iodato.","cpk":"940094"},{"z":54,"s":"Xe","n":"Xeno","en":"Xenon","m":"131.29","stab":true,"cat":"Gas nobile","st":"Gas","conf":"[Kr] 4d¹⁰ 5s² 5p⁶","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6]],"gusci":[2,8,18,18,8],"A":132,"N":78,"ab":"0,26909","t":null,"eneg":2.6,"r":216.0,"ie":12.1298,"ea":null,"ox":"0","mp":161.36,"bp":165.03,"d":0.005887,"p":5,"g":18,"b":"p","row":5,"col":18,"anno":"1898","chi":"William Ramsay e Morris Travers","storia":"Nel 1898, dopo kripton e neon, Ramsay e Travers isolarono dall'aria liquida un terzo gas nobile, presente in quantità piccolissime. Lo chiamarono xeno, dal greco «xenos», straniero.","usi":"Fari delle auto e proiettori cinematografici, anestesia, propulsori ionici di satelliti e sonde spaziali.","cur":"Nel 1962 Neil Bartlett preparò con lo xeno il primo composto di un gas nobile: i gas nobili non sono del tutto «inerti».","cpk":"429EB0"},{"z":55,"s":"Cs","n":"Cesio","en":"Cesium","m":"132.9054520","stab":true,"cat":"Metallo alcalino","st":"Solido","conf":"[Xe] 6s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",1]],"gusci":[2,8,18,18,8,1],"A":133,"N":78,"ab":"1","t":null,"eneg":0.79,"r":343.0,"ie":3.8939,"ea":0.472,"ox":"+1","mp":301.59,"bp":944.0,"d":1.93,"p":6,"g":1,"b":"s","row":6,"col":1,"anno":"1860","chi":"Robert Bunsen e Gustav Kirchhoff","storia":"Nel 1860 Bunsen e Kirchhoff, analizzando allo spettroscopio l'acqua minerale di Dürkheim, videro due righe blu sconosciute. Fu il primo elemento scoperto con la spettroscopia; il nome viene dal latino «caesius», azzurro. Il metallo fu isolato solo nel 1882 da Carl Setterberg.","usi":"Orologi atomici, fluidi per la perforazione dei pozzi petroliferi, fotocellule.","cur":"Il secondo è definito dalle oscillazioni dell'atomo di cesio-133: 9 192 631 770 al secondo. Il metallo fonde a circa 28 °C.","cpk":"57178F"},{"z":56,"s":"Ba","n":"Bario","en":"Barium","m":"137.33","stab":true,"cat":"Metallo alcalino-terroso","st":"Solido","conf":"[Xe] 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2]],"gusci":[2,8,18,18,8,2],"A":138,"N":82,"ab":"0,7170","t":null,"eneg":0.89,"r":268.0,"ie":5.2117,"ea":null,"ox":"+2","mp":1000.0,"bp":2170.0,"d":3.62,"p":6,"g":2,"b":"s","row":6,"col":2,"anno":"1772","chi":"Carl Wilhelm Scheele; Humphry Davy","storia":"Il minerale barite era noto per il suo peso insolito (in greco «barys», pesante). Negli anni Settanta del Settecento Scheele capì che conteneva una nuova «terra», e nel 1808 Davy isolò il metallo per elettrolisi.","usi":"Il solfato di bario si beve prima delle radiografie dell'apparato digerente, per rendere visibili stomaco e intestino; fuochi d'artificio verdi, fanghi di perforazione.","cur":"All'inizio del Seicento un calzolaio bolognese scoprì che un minerale di bario, la «pietra di Bologna», brillava al buio dopo essere stato esposto al Sole.","cpk":"00C900"},{"z":57,"s":"La","n":"Lantanio","en":"Lanthanum","m":"138.9055","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 5d¹ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["5d",1]],"gusci":[2,8,18,18,9,2],"A":139,"N":82,"ab":"0,9991119","t":null,"eneg":1.1,"r":240.0,"ie":5.5769,"ea":0.5,"ox":"+3","mp":1191.0,"bp":3737.0,"d":6.15,"p":6,"g":null,"b":"f","row":9,"col":3,"anno":"1839","chi":"Carl Gustaf Mosander","storia":"Nel 1839 lo svedese Mosander, allievo di Berzelius, scoprì che l'ossido di cerio conteneva un altro elemento, rimasto fino ad allora nascosto. Lo chiamò lantanio, dal greco «lanthanein», stare nascosto.","usi":"Lenti di fotocamere e telescopi, batterie al nichel-idruro metallico delle auto ibride, pietrine degli accendini.","cur":"Dà il nome ai lantanidi, i quindici elementi dal lantanio al lutezio.","cpk":"70D4FF"},{"z":58,"s":"Ce","n":"Cerio","en":"Cerium","m":"140.12","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹ 5d¹ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",1],["5d",1]],"gusci":[2,8,18,19,9,2],"A":140,"N":82,"ab":"0,88450","t":null,"eneg":1.12,"r":235.0,"ie":5.5386,"ea":0.5,"ox":"+4, +3","mp":1071.0,"bp":3697.0,"d":6.77,"p":6,"g":null,"b":"f","row":9,"col":4,"anno":"1803","chi":"Berzelius e Hisinger; Klaproth","storia":"Nel 1803 Berzelius e Hisinger in Svezia, e in modo indipendente Klaproth in Germania, scoprirono il suo ossido in un minerale pesante. Lo chiamarono cerio, dall'asteroide Cerere scoperto due anni prima.","usi":"Pietrine degli accendini (ferrocerio), lucidatura di vetri e lenti, marmitte catalitiche.","cur":"È il più abbondante dei lantanidi: nella crosta terrestre è comune quanto il rame.","cpk":"FFFFC7"},{"z":59,"s":"Pr","n":"Praseodimio","en":"Praseodymium","m":"140.9077","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f³ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",3]],"gusci":[2,8,18,21,8,2],"A":141,"N":82,"ab":"1","t":null,"eneg":1.13,"r":239.0,"ie":5.4702,"ea":null,"ox":"+3","mp":1204.0,"bp":3793.0,"d":6.77,"p":6,"g":null,"b":"f","row":9,"col":5,"anno":"1885","chi":"Carl Auer von Welsbach","storia":"Il «didimio», scoperto da Mosander nel 1841, sembrava un elemento. Nel 1885 l'austriaco Auer von Welsbach riuscì a separarlo in due: il praseodimio, «gemello verde», e il neodimio, «nuovo gemello».","usi":"Magneti potenti (insieme al neodimio), vetri gialli e occhiali protettivi per saldatori e soffiatori di vetro, leghe per motori d'aereo.","cur":"I suoi sali sono di colore verde, da cui il nome.","cpk":"D9FFC7"},{"z":60,"s":"Nd","n":"Neodimio","en":"Neodymium","m":"144.24","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f⁴ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",4]],"gusci":[2,8,18,22,8,2],"A":142,"N":82,"ab":"0,27152","t":null,"eneg":1.14,"r":229.0,"ie":5.525,"ea":null,"ox":"+3","mp":1294.0,"bp":3347.0,"d":7.01,"p":6,"g":null,"b":"f","row":9,"col":6,"anno":"1885","chi":"Carl Auer von Welsbach","storia":"Nel 1885 Auer von Welsbach separò il didimio in due elementi diversi. Uno lo chiamò neodimio, «nuovo gemello» in greco; l'altro praseodimio. Il metallo fu ottenuto per la prima volta nel 1901.","usi":"Magneti neodimio-ferro-boro, i più potenti in commercio: cuffie, motori elettrici, turbine eoliche, dischi rigidi; laser Nd:YAG.","cur":"Un magnete al neodimio grande come una moneta può sostenere un peso di parecchi chili.","cpk":"C7FFC7"},{"z":61,"s":"Pm","n":"Promezio","en":"Promethium","m":"144.91276","stab":false,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f⁵ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",5]],"gusci":[2,8,18,23,8,2],"A":145,"N":84,"ab":null,"t":"17,7 anni","eneg":null,"r":236.0,"ie":5.5819,"ea":null,"ox":"+3","mp":1315.0,"bp":3273.0,"d":7.26,"p":6,"g":null,"b":"f","row":9,"col":7,"anno":"1945","chi":"Jacob Marinsky, Lawrence Glendenin e Charles Coryell","storia":"Per decenni l'elemento 61 fu cercato tra le terre rare senza successo. Nel 1945, nei laboratori di Oak Ridge (Stati Uniti), Marinsky, Glendenin e Coryell lo identificarono tra i prodotti della fissione dell'uranio. Il nome viene da Prometeo, il titano che rubò il fuoco agli dèi.","usi":"Batterie nucleari di lunga durata (pacemaker, sonde), vernici luminose, strumenti per misurare spessori.","cur":"Tutti i suoi isotopi sono radioattivi: in natura ne esistono solo tracce, prodotte dalla fissione spontanea dell'uranio.","cpk":"A3FFC7"},{"z":62,"s":"Sm","n":"Samario","en":"Samarium","m":"150.4","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f⁶ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",6]],"gusci":[2,8,18,24,8,2],"A":152,"N":90,"ab":"0,2674","t":null,"eneg":1.17,"r":229.0,"ie":5.6437,"ea":null,"ox":"+3, +2","mp":1347.0,"bp":2067.0,"d":7.52,"p":6,"g":null,"b":"f","row":9,"col":8,"anno":"1879","chi":"Paul-Émile Lecoq de Boisbaudran","storia":"Nel 1879 Lecoq de Boisbaudran trovò un nuovo elemento nella samarskite, un minerale che porta il nome dell'ingegnere minerario russo Vasilij Samarskij-Bychovec.","usi":"Magneti samario-cobalto che resistono alle alte temperature, farmaci contro il dolore dei tumori alle ossa (samario-153), barre di controllo dei reattori.","cur":"È il primo elemento il cui nome deriva, anche se indirettamente, da una persona.","cpk":"8FFFC7"},{"z":63,"s":"Eu","n":"Europio","en":"Europium","m":"151.96","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f⁷ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",7]],"gusci":[2,8,18,25,8,2],"A":153,"N":90,"ab":"0,5219","t":null,"eneg":null,"r":233.0,"ie":5.6704,"ea":null,"ox":"+3, +2","mp":1095.0,"bp":1802.0,"d":5.24,"p":6,"g":null,"b":"f","row":9,"col":9,"anno":"1901","chi":"Eugène-Anatole Demarçay","storia":"Nel 1896 il francese Demarçay notò righe spettrali sconosciute in un campione di samario; nel 1901 riuscì a separare il nuovo elemento e lo chiamò europio, dall'Europa.","usi":"Fosfori rossi e blu di schermi e lampade a risparmio energetico, inchiostri fluorescenti di sicurezza.","cur":"Alcune banconote contengono inchiostri all'europio che si accendono sotto la luce ultravioletta, come difesa contro i falsi.","cpk":"61FFC7"},{"z":64,"s":"Gd","n":"Gadolinio","en":"Gadolinium","m":"157.2","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f⁷ 5d¹ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",7],["5d",1]],"gusci":[2,8,18,25,9,2],"A":158,"N":94,"ab":"0,24820","t":null,"eneg":1.2,"r":237.0,"ie":6.1498,"ea":null,"ox":"+3","mp":1586.0,"bp":3546.0,"d":7.9,"p":6,"g":null,"b":"f","row":9,"col":10,"anno":"1880","chi":"Jean Charles Galissard de Marignac","storia":"Nel 1880 lo svizzero Marignac notò un nuovo ossido nei minerali di terre rare; nel 1886 Lecoq de Boisbaudran ne ottenne un campione puro e lo chiamò gadolinio, in onore di Johan Gadolin, il primo a studiare le terre rare.","usi":"Mezzo di contrasto per la risonanza magnetica, barre di controllo dei reattori, schermi per raggi X.","cur":"Sotto i 20 °C circa è magnetico come il ferro; sopra quella temperatura smette di esserlo.","cpk":"45FFC7"},{"z":65,"s":"Tb","n":"Terbio","en":"Terbium","m":"158.92535","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f⁹ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",9]],"gusci":[2,8,18,27,8,2],"A":159,"N":94,"ab":"1","t":null,"eneg":null,"r":221.0,"ie":5.8638,"ea":null,"ox":"+3","mp":1629.0,"bp":3503.0,"d":8.23,"p":6,"g":null,"b":"f","row":9,"col":11,"anno":"1843","chi":"Carl Gustaf Mosander","storia":"Nel 1843 Mosander separò l'ittria in tre parti: ittria, «erbia» e «terbia». Più tardi i nomi di erbia e terbia furono scambiati per errore, e sono rimasti così.","usi":"Fosfori verdi di schermi e lampade, leghe magnetostrittive che cambiano forma in un campo magnetico (sonar, attuatori).","cur":"Come ittrio, erbio e itterbio, prende il nome dal villaggio svedese di Ytterby.","cpk":"30FFC7"},{"z":66,"s":"Dy","n":"Disprosio","en":"Dysprosium","m":"162.50","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹⁰ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",10]],"gusci":[2,8,18,28,8,2],"A":164,"N":98,"ab":"0,28260","t":null,"eneg":1.22,"r":229.0,"ie":5.9391,"ea":null,"ox":"+3","mp":1685.0,"bp":2840.0,"d":8.55,"p":6,"g":null,"b":"f","row":9,"col":12,"anno":"1886","chi":"Paul-Émile Lecoq de Boisbaudran","storia":"Nel 1886 Lecoq de Boisbaudran separò il disprosio da un campione di olmio dopo decine di tentativi. Lo chiamò dal greco «dysprositos», difficile da raggiungere.","usi":"Magneti al neodimio per motori di auto elettriche e turbine eoliche (li rende resistenti al calore), lampade ad alogenuri.","cur":"Il metallo puro fu ottenuto solo negli anni Cinquanta del Novecento, grazie alle tecniche di scambio ionico.","cpk":"1FFFC7"},{"z":67,"s":"Ho","n":"Olmio","en":"Holmium","m":"164.93033","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹¹ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",11]],"gusci":[2,8,18,29,8,2],"A":165,"N":98,"ab":"1","t":null,"eneg":1.23,"r":216.0,"ie":6.0215,"ea":null,"ox":"+3","mp":1747.0,"bp":2973.0,"d":8.8,"p":6,"g":null,"b":"f","row":9,"col":13,"anno":"1878","chi":"Marc Delafontaine e Jacques-Louis Soret; Per Teodor Cleve","storia":"Nel 1878 Delafontaine e Soret, a Ginevra, osservarono righe spettrali sconosciute; nel 1879 lo svedese Cleve separò il nuovo ossido dall'erbia e lo chiamò olmio, da «Holmia», nome latino di Stoccolma.","usi":"Laser medici (per frantumare i calcoli renali e in chirurgia), magneti per campi magnetici molto intensi.","cur":"Ha il momento magnetico più alto di tutti gli elementi presenti in natura.","cpk":"00FF9C"},{"z":68,"s":"Er","n":"Erbio","en":"Erbium","m":"167.26","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹² 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",12]],"gusci":[2,8,18,30,8,2],"A":166,"N":98,"ab":"0,33503","t":null,"eneg":1.24,"r":235.0,"ie":6.1077,"ea":null,"ox":"+3","mp":1802.0,"bp":3141.0,"d":9.07,"p":6,"g":null,"b":"f","row":9,"col":14,"anno":"1843","chi":"Carl Gustaf Mosander","storia":"Fu separato da Mosander nel 1843 insieme al terbio, sempre dai minerali di Ytterby. Un campione di metallo abbastanza puro fu ottenuto solo nel 1934.","usi":"Amplificatori per le fibre ottiche di Internet, laser per dermatologi e dentisti, vetri colorati di rosa.","cur":"Gran parte dei dati di Internet viaggia lungo fibre ottiche amplificate da tratti di fibra contenenti erbio.","cpk":""},{"z":69,"s":"Tm","n":"Tulio","en":"Thulium","m":"168.93422","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹³ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",13]],"gusci":[2,8,18,31,8,2],"A":169,"N":100,"ab":"1","t":null,"eneg":1.25,"r":227.0,"ie":6.1844,"ea":null,"ox":"+3","mp":1818.0,"bp":2223.0,"d":9.32,"p":6,"g":null,"b":"f","row":9,"col":15,"anno":"1879","chi":"Per Teodor Cleve","storia":"Nel 1879 Cleve, analizzando l'erbia, la separò in tre componenti: erbio, olmio e tulio. Il nome viene da Thule, nome mitologico dell'estremo Nord.","usi":"Apparecchi portatili a raggi X, laser chirurgici.","cur":"È uno dei lantanidi più rari.","cpk":"00D452"},{"z":70,"s":"Yb","n":"Itterbio","en":"Ytterbium","m":"173.04","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹⁴ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14]],"gusci":[2,8,18,32,8,2],"A":174,"N":104,"ab":"0,31896","t":null,"eneg":null,"r":242.0,"ie":6.2542,"ea":null,"ox":"+3, +2","mp":1092.0,"bp":1469.0,"d":6.9,"p":6,"g":null,"b":"f","row":9,"col":16,"anno":"1878","chi":"Jean Charles Galissard de Marignac","storia":"Nel 1878 Marignac separò dall'erbia un nuovo ossido e lo chiamò itterbia, sempre dal villaggio di Ytterby. Nel 1907 si scoprì che conteneva in realtà due elementi: itterbio e lutezio.","usi":"Orologi atomici sperimentali tra i più precisi al mondo, laser per lavorazioni industriali, acciai speciali.","cur":"È il quarto elemento che prende il nome dal villaggio di Ytterby.","cpk":"00BF38"},{"z":71,"s":"Lu","n":"Lutezio","en":"Lutetium","m":"174.967","stab":true,"cat":"Lantanide","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",1]],"gusci":[2,8,18,32,9,2],"A":175,"N":104,"ab":"0,97414","t":null,"eneg":1.27,"r":221.0,"ie":5.4259,"ea":null,"ox":"+3","mp":1936.0,"bp":3675.0,"d":9.84,"p":6,"g":null,"b":"f","row":9,"col":17,"anno":"1907","chi":"Georges Urbain; Carl Auer von Welsbach","storia":"Nel 1907, in modo indipendente, il francese Urbain e l'austriaco Auer von Welsbach scoprirono che l'itterbio di Marignac conteneva un altro elemento. Prevalse il nome proposto da Urbain, lutezio, da «Lutetia», nome latino di Parigi.","usi":"Rivelatori per la PET in medicina, catalizzatori per il petrolio; il lutezio-177 si usa per curare alcuni tumori.","cur":"È l'ultimo e il più denso dei lantanidi.","cpk":"00AB24"},{"z":72,"s":"Hf","n":"Afnio","en":"Hafnium","m":"178.5","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d² 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",2]],"gusci":[2,8,18,32,10,2],"A":180,"N":108,"ab":"0,3512","t":null,"eneg":1.3,"r":212.0,"ie":6.8251,"ea":null,"ox":"+4","mp":2506.0,"bp":4876.0,"d":13.3,"p":6,"g":4,"b":"d","row":6,"col":4,"anno":"1923","chi":"Dirk Coster e George de Hevesy","storia":"Il fisico danese Niels Bohr predisse che l'elemento 72 doveva somigliare allo zirconio. Nel 1923 Coster e Hevesy, a Copenaghen, lo trovarono proprio nei minerali di zirconio grazie alla spettroscopia a raggi X. Lo chiamarono afnio, da «Hafnia», nome latino di Copenaghen.","usi":"Barre di controllo dei reattori nucleari, isolanti nei chip dei processori moderni (ossido di afnio), superleghe.","cur":"Afnio e zirconio si somigliano tanto che separarli è difficilissimo: lo zirconio naturale contiene sempre un po' di afnio.","cpk":"4DC2FF"},{"z":73,"s":"Ta","n":"Tantalio","en":"Tantalum","m":"180.9479","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d³ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",3]],"gusci":[2,8,18,32,11,2],"A":181,"N":108,"ab":"0,9998824","t":null,"eneg":1.5,"r":217.0,"ie":7.5496,"ea":0.322,"ox":"+5","mp":3290.0,"bp":5731.0,"d":16.4,"p":6,"g":5,"b":"d","row":6,"col":5,"anno":"1802","chi":"Anders Gustaf Ekeberg","storia":"Nel 1802 lo svedese Ekeberg scoprì un nuovo elemento in minerali di Svezia e Finlandia. Poiché il suo ossido non si scioglieva negli acidi, lo chiamò tantalio, da Tantalo, il re del mito condannato a non poter mai bere l'acqua che lo circondava.","usi":"Condensatori di telefoni e computer, protesi e strumenti chirurgici, parti di motori a reazione.","cur":"Gran parte del tantalio si ricava dal coltan, un minerale la cui estrazione in Africa centrale è legata a conflitti armati.","cpk":"4DA6FF"},{"z":74,"s":"W","n":"Tungsteno","en":"Tungsten","m":"183.8","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d⁴ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",4]],"gusci":[2,8,18,32,12,2],"A":184,"N":110,"ab":"0,3064","t":null,"eneg":2.36,"r":210.0,"ie":7.864,"ea":0.815,"ox":"+6","mp":3695.0,"bp":5828.0,"d":19.3,"p":6,"g":6,"b":"d","row":6,"col":6,"anno":"1783","chi":"Juan José e Fausto Elhuyar","storia":"Nel 1781 Scheele scoprì un nuovo acido nel minerale oggi chiamato scheelite. Nel 1783 i fratelli spagnoli Elhuyar ricavarono lo stesso acido dalla wolframite e, riducendolo con il carbone, ottennero il metallo. Il simbolo W viene da wolfram, l'altro nome dell'elemento.","usi":"Filamenti delle lampadine a incandescenza, punte di trapani e utensili (carburo di tungsteno), elettrodi di saldatura, contrappesi.","cur":"Ha il punto di fusione più alto di tutti i metalli: circa 3422 °C.","cpk":"2194D6"},{"z":75,"s":"Re","n":"Renio","en":"Rhenium","m":"186.21","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d⁵ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",5]],"gusci":[2,8,18,32,13,2],"A":187,"N":112,"ab":"0,6260","t":null,"eneg":1.9,"r":217.0,"ie":7.8335,"ea":0.15,"ox":"+7, +6, +4","mp":3459.0,"bp":5869.0,"d":20.8,"p":6,"g":7,"b":"d","row":6,"col":7,"anno":"1925","chi":"Walter Noddack, Ida Tacke e Otto Berg","storia":"Già nel 1908 il giapponese Masataka Ogawa annunciò un nuovo elemento, il «nipponio»; oggi sappiamo che aveva trovato proprio il 75, ma la sua scoperta non fu riconosciuta. Nel 1925 i tedeschi Noddack, Tacke e Berg lo individuarono con i raggi X in minerali di platino e columbite e lo chiamarono renio, dal fiume Reno.","usi":"Superleghe per le pale delle turbine dei motori a reazione, catalizzatori per la produzione di benzina.","cur":"È stato l'ultimo elemento con isotopi stabili a essere scoperto.","cpk":"267DAB"},{"z":76,"s":"Os","n":"Osmio","en":"Osmium","m":"190.2","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d⁶ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",6]],"gusci":[2,8,18,32,14,2],"A":192,"N":116,"ab":"0,4078","t":null,"eneg":2.2,"r":216.0,"ie":8.4382,"ea":1.1,"ox":"+4, +3","mp":3306.0,"bp":5285.0,"d":22.57,"p":6,"g":8,"b":"d","row":6,"col":8,"anno":"1803","chi":"Smithson Tennant","storia":"Nel 1803 l'inglese Tennant sciolse platino grezzo in acqua regia e analizzò il residuo nero che non si scioglieva: conteneva due metalli nuovi, osmio e iridio. Osmio viene dal greco «osme», odore, per l'odore pungente del suo ossido.","usi":"Punte di penne stilografiche e contatti elettrici (in lega); il tetrossido di osmio serve a preparare i campioni per il microscopio elettronico.","cur":"È l'elemento più denso: circa 22,6 grammi per centimetro cubo, il doppio del piombo.","cpk":"266696"},{"z":77,"s":"Ir","n":"Iridio","en":"Iridium","m":"192.22","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d⁷ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",7]],"gusci":[2,8,18,32,15,2],"A":193,"N":116,"ab":"0,6277","t":null,"eneg":2.2,"r":202.0,"ie":8.967,"ea":1.565,"ox":"+4, +3","mp":2719.0,"bp":4701.0,"d":22.42,"p":6,"g":9,"b":"d","row":6,"col":9,"anno":"1803","chi":"Smithson Tennant","storia":"Fu scoperto da Tennant nel 1803 insieme all'osmio, nei residui insolubili del platino. Lo chiamò iridio da Iride, la dea dell'arcobaleno, per i colori molto vari dei suoi sali.","usi":"Candele d'accensione di lunga durata, crogioli per temperature altissime, contatti elettrici; il vecchio metro campione era di platino e iridio.","cur":"Uno strato di roccia ricco di iridio, studiato per la prima volta a Gubbio, è la prova dell'asteroide che 66 milioni di anni fa causò l'estinzione dei dinosauri.","cpk":"175487"},{"z":78,"s":"Pt","n":"Platino","en":"Platinum","m":"195.08","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d⁹ 6s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",1],["4f",14],["5d",9]],"gusci":[2,8,18,32,17,1],"A":195,"N":117,"ab":"0,33775","t":null,"eneg":2.28,"r":209.0,"ie":8.9588,"ea":2.128,"ox":"+4, +2","mp":2041.55,"bp":4098.0,"d":21.46,"p":6,"g":10,"b":"d","row":6,"col":10,"anno":"1748","chi":"Antonio de Ulloa","storia":"Le popolazioni precolombiane del Sud America lavoravano già leghe di oro e platino. Gli spagnoli lo chiamarono «platina», piccolo argento, e all'inizio lo consideravano un'impurità fastidiosa dell'oro. Fu descritto come nuovo metallo dallo spagnolo Antonio de Ulloa nel 1748 e dall'inglese William Brownrigg nel 1750.","usi":"Marmitte catalitiche, gioielli, contatti elettrici, pacemaker, farmaci antitumorali (cisplatino).","cur":"Il chilogrammo campione, usato come riferimento mondiale fino al 2019, è un cilindro di platino e iridio conservato vicino a Parigi.","cpk":"D0D0E0"},{"z":79,"s":"Au","n":"Oro","en":"Gold","m":"196.96657","stab":true,"cat":"Metallo di transizione","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",1],["4f",14],["5d",10]],"gusci":[2,8,18,32,18,1],"A":197,"N":118,"ab":"1","t":null,"eneg":2.54,"r":166.0,"ie":9.2256,"ea":2.309,"ox":"+3, +1","mp":1337.33,"bp":3129.0,"d":19.282,"p":6,"g":11,"b":"d","row":6,"col":11,"anno":"Antichità","chi":"Noto dalla preistoria","storia":"L'oro si trova puro in natura e, lucente e inalterabile, affascina l'umanità da sempre. I più antichi oggetti d'oro lavorato, di oltre 6000 anni fa, provengono dalla necropoli di Varna, in Bulgaria. Il simbolo Au viene dal latino «aurum».","usi":"Gioielli, riserve delle banche centrali, contatti dei circuiti elettronici, odontoiatria, visiere degli astronauti.","cur":"È il metallo più malleabile: con un solo grammo si può tirare un filo lungo chilometri, o battere una foglia centinaia di volte più sottile di un capello.","cpk":"FFD123"},{"z":80,"s":"Hg","n":"Mercurio","en":"Mercury","m":"200.59","stab":true,"cat":"Metallo di transizione","st":"Liquido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10]],"gusci":[2,8,18,32,18,2],"A":202,"N":122,"ab":"0,2974","t":null,"eneg":2.0,"r":209.0,"ie":10.4375,"ea":null,"ox":"+2, +1","mp":234.32,"bp":629.88,"d":13.5336,"p":6,"g":12,"b":"d","row":6,"col":12,"anno":"Antichità","chi":"Noto dall'antichità","storia":"Gocce di mercurio sono state trovate in tombe egizie di circa 3500 anni fa, e il suo minerale, il cinabro rosso, era un pigmento prezioso. Gli alchimisti lo consideravano una sostanza fondamentale. Il simbolo Hg viene dal latino «hydrargyrum», argento liquido.","usi":"Lampade fluorescenti, alcuni strumenti di laboratorio; termometri, barometri e amalgame dentali sono stati quasi del tutto abbandonati per la sua tossicità.","cur":"È l'unico metallo liquido a temperatura ambiente. Sul Monte Amiata, in Toscana, c'era una delle più grandi miniere di mercurio del mondo.","cpk":"B8B8D0"},{"z":81,"s":"Tl","n":"Tallio","en":"Thallium","m":"204.383","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",1]],"gusci":[2,8,18,32,18,3],"A":205,"N":124,"ab":"[0,7041; 0,7056]","t":null,"eneg":1.62,"r":196.0,"ie":6.1083,"ea":0.2,"ox":"+3, +1","mp":577.0,"bp":1746.0,"d":11.8,"p":6,"g":13,"b":"p","row":6,"col":13,"anno":"1861","chi":"William Crookes","storia":"Nel 1861 l'inglese Crookes, esaminando allo spettroscopio i residui di una fabbrica di acido solforico, vide una brillante riga verde. Lo chiamò tallio, dal greco «thallos», germoglio verde. L'anno dopo il francese Lamy ne preparò dei lingotti e mostrò che era un metallo.","usi":"Rivelatori a infrarossi, vetri speciali, alcuni esami del cuore in medicina nucleare.","cur":"È estremamente tossico, e in passato fu usato come veleno per topi e insetti.","cpk":"A6544D"},{"z":82,"s":"Pb","n":"Piombo","en":"Lead","m":"207","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",2]],"gusci":[2,8,18,32,18,4],"A":208,"N":126,"ab":"[0,0338; 0,9775]","t":null,"eneg":2.33,"r":202.0,"ie":7.4167,"ea":0.36,"ox":"+4, +2","mp":600.61,"bp":2022.0,"d":11.342,"p":6,"g":14,"b":"p","row":6,"col":14,"anno":"Antichità","chi":"Noto dall'antichità","storia":"Il piombo è facile da estrarre e da fondere: è usato da almeno 8000 anni. I Romani ne facevano tubature per l'acqua; il simbolo Pb viene dal latino «plumbum», da cui la parola inglese «plumber», idraulico.","usi":"Batterie delle auto, schermature contro i raggi X, zavorre; un tempo anche benzine, vernici e tubature, oggi vietate.","cur":"È tossico per il sistema nervoso. Il piombo-208 è il nucleo stabile più pesante che esista.","cpk":"575961"},{"z":83,"s":"Bi","n":"Bismuto","en":"Bismuth","m":"208.9804","stab":true,"cat":"Metallo post-transizionale","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",3]],"gusci":[2,8,18,32,18,5],"A":209,"N":126,"ab":"1","t":null,"eneg":2.02,"r":207.0,"ie":7.2855,"ea":0.946,"ox":"+5, +3","mp":544.55,"bp":1837.0,"d":9.807,"p":6,"g":15,"b":"p","row":6,"col":15,"anno":"1753","chi":"Claude François Geoffroy","storia":"Il bismuto era conosciuto già nel Medioevo, ma veniva confuso con lo stagno e con il piombo. Nel 1753 il francese Geoffroy dimostrò che era un metallo distinto.","usi":"Farmaci per lo stomaco, cosmetici perlescenti, leghe che fondono a bassa temperatura (per esempio negli sprinkler antincendio), sostituto non tossico del piombo.","cur":"È debolmente radioattivo, ma così poco che metà dei suoi atomi decade in circa 20 miliardi di miliardi di anni: più di un miliardo di volte l'età dell'universo.","cpk":"9E4FB5"},{"z":84,"s":"Po","n":"Polonio","en":"Polonium","m":"208.98243","stab":false,"cat":"Semimetallo","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",4]],"gusci":[2,8,18,32,18,6],"A":209,"N":125,"ab":null,"t":"124 anni","eneg":2.0,"r":197.0,"ie":8.4181,"ea":1.9,"ox":"+4, +2","mp":527.0,"bp":1235.0,"d":9.32,"p":6,"g":16,"b":"p","row":6,"col":16,"anno":"1898","chi":"Marie e Pierre Curie","storia":"Nel 1898 i coniugi Curie notarono che la pechblenda era più radioattiva di quanto giustificasse l'uranio che conteneva. Lavorando tonnellate di minerale isolarono tracce di un nuovo elemento, che Marie chiamò polonio in onore della sua patria, la Polonia, che allora non esisteva come Stato indipendente.","usi":"Dispositivi che eliminano l'elettricità statica nell'industria, fonti di calore per alcuni satelliti del passato.","cur":"Per via della sua intensa radioattività è una delle sostanze più tossiche che si conoscano.","cpk":"AB5C00"},{"z":85,"s":"At","n":"Astato","en":"Astatine","m":"209.98715","stab":false,"cat":"Alogeno","st":"Solido","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",5]],"gusci":[2,8,18,32,18,7],"A":210,"N":125,"ab":null,"t":"8,1 ore","eneg":2.2,"r":202.0,"ie":9.3175,"ea":2.8,"ox":"","mp":575.0,"bp":null,"d":7.0,"p":6,"g":17,"b":"p","row":6,"col":17,"anno":"1940","chi":"Dale Corson, Kenneth MacKenzie ed Emilio Segrè","storia":"Nel 1940, a Berkeley, Corson, MacKenzie e l'italiano Segrè lo produssero bombardando il bismuto con particelle alfa. Il nome viene dal greco «astatos», instabile. Nel 1943 fu trovato anche in natura, in tracce piccolissime.","usi":"L'astato-211 è studiato per la radioterapia mirata di alcuni tumori.","cur":"È considerato l'elemento naturale più raro della crosta terrestre.","cpk":"754F45"},{"z":86,"s":"Rn","n":"Radon","en":"Radon","m":"222.01758","stab":false,"cat":"Gas nobile","st":"Gas","conf":"[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6]],"gusci":[2,8,18,32,18,8],"A":222,"N":136,"ab":null,"t":"3,82 giorni","eneg":null,"r":220.0,"ie":10.7485,"ea":null,"ox":"0","mp":202.0,"bp":211.45,"d":0.00973,"p":6,"g":18,"b":"p","row":6,"col":18,"anno":"1899","chi":"Ernest Rutherford e Robert Owens; Friedrich Ernst Dorn","storia":"Nel 1899 Rutherford e Owens notarono che il torio liberava un gas radioattivo, e nel 1900 il tedesco Dorn osservò lo stesso fenomeno con il radio. Nel 1910 Ramsay e Whytlaw-Gray isolarono il gas e ne misurarono la densità: era il gas più pesante conosciuto.","usi":"Si misura nelle case e nei luoghi di lavoro per la sicurezza; serve a studiare acque sotterranee e attività sismica.","cur":"Si accumula negli scantinati e nei piani bassi degli edifici: dopo il fumo, è la principale causa di tumore al polmone.","cpk":"428296"},{"z":87,"s":"Fr","n":"Francio","en":"Francium","m":"223.01973","stab":false,"cat":"Metallo alcalino","st":"Solido","conf":"[Rn] 7s¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",1]],"gusci":[2,8,18,32,18,8,1],"A":223,"N":136,"ab":null,"t":"22 minuti","eneg":0.7,"r":348.0,"ie":4.0727,"ea":0.47,"ox":"+1","mp":300.0,"bp":null,"d":null,"p":7,"g":1,"b":"s","row":7,"col":1,"anno":"1939","chi":"Marguerite Perey","storia":"Nel 1939 la francese Marguerite Perey, ex assistente di Marie Curie all'Istituto del Radio di Parigi, scoprì che l'attinio-227 a volte si trasformava in un elemento sconosciuto. Lo chiamò francio, dalla Francia. Fu l'ultimo elemento scoperto in natura.","usi":"Solo ricerca scientifica sulla struttura degli atomi.","cur":"Il suo isotopo più stabile si dimezza in circa 22 minuti: nessuno ne ha mai visto una quantità abbastanza grande da osservarla a occhio nudo.","cpk":"420066"},{"z":88,"s":"Ra","n":"Radio","en":"Radium","m":"226.02541","stab":false,"cat":"Metallo alcalino-terroso","st":"Solido","conf":"[Rn] 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2]],"gusci":[2,8,18,32,18,8,2],"A":226,"N":138,"ab":null,"t":"1600 anni","eneg":0.9,"r":283.0,"ie":5.2784,"ea":null,"ox":"+2","mp":973.0,"bp":1413.0,"d":5.0,"p":7,"g":2,"b":"s","row":7,"col":2,"anno":"1898","chi":"Marie e Pierre Curie","storia":"Pochi mesi dopo il polonio, sempre nel 1898, i Curie annunciarono un secondo elemento nella pechblenda, ancora più radioattivo: il radio. Nel 1910 Marie Curie e André Debierne isolarono il metallo. Per queste scoperte Marie ricevette il Nobel per la chimica nel 1911.","usi":"Il radio-223 cura alcuni tumori alle ossa; un tempo era usato in radioterapia e nelle vernici luminose degli orologi.","cur":"Le operaie che dipingevano i quadranti luminosi con vernici al radio, le «Radium Girls», si ammalarono gravemente: la loro vicenda portò alle prime norme di sicurezza sulle radiazioni.","cpk":"007D00"},{"z":89,"s":"Ac","n":"Attinio","en":"Actinium","m":"227.02775","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 6d¹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["6d",1]],"gusci":[2,8,18,32,18,9,2],"A":227,"N":138,"ab":null,"t":"21,8 anni","eneg":1.1,"r":260.0,"ie":5.3802,"ea":null,"ox":"+3","mp":1324.0,"bp":3471.0,"d":10.07,"p":7,"g":null,"b":"f","row":10,"col":3,"anno":"1899","chi":"André-Louis Debierne","storia":"Nel 1899 Debierne, collaboratore dei Curie, annunciò un nuovo elemento radioattivo nella pechblenda, e nel 1902 il tedesco Giesel lo trovò in modo indipendente. Il nome viene dal greco «aktis», raggio. Dà il nome agli attinidi.","usi":"L'attinio-225 è usato in terapie sperimentali contro i tumori; fonte di neutroni.","cur":"È così radioattivo che al buio brilla di una debole luce azzurra.","cpk":"70ABFA"},{"z":90,"s":"Th","n":"Torio","en":"Thorium","m":"232.038","stab":true,"cat":"Attinide","st":"Solido","conf":"[Rn] 6d² 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["6d",2]],"gusci":[2,8,18,32,18,10,2],"A":232,"N":142,"ab":"0,9998","t":null,"eneg":1.3,"r":237.0,"ie":6.3067,"ea":null,"ox":"+4","mp":2023.0,"bp":5061.0,"d":11.72,"p":7,"g":null,"b":"f","row":10,"col":4,"anno":"1829","chi":"Jöns Jacob Berzelius","storia":"Nel 1829 Berzelius ricevette un minerale nero trovato in Norvegia e vi scoprì l'ossido di un elemento nuovo. Lo chiamò torio, da Thor, dio nordico del tuono. Nel 1898 Marie Curie e Gerhard Schmidt scoprirono, indipendentemente, che è radioattivo.","usi":"Reticelle delle lampade a gas, lenti ottiche di alta qualità, elettrodi di saldatura; è studiato come combustibile nucleare.","cur":"Nella crosta terrestre è circa tre volte più abbondante dell'uranio.","cpk":"00BAFF"},{"z":91,"s":"Pa","n":"Protoattinio","en":"Protactinium","m":"231.0359","stab":true,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f² 6d¹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",2],["6d",1]],"gusci":[2,8,18,32,20,9,2],"A":231,"N":140,"ab":"1","t":null,"eneg":1.5,"r":243.0,"ie":5.89,"ea":null,"ox":"+5, +4","mp":1845.0,"bp":null,"d":15.37,"p":7,"g":null,"b":"f","row":10,"col":5,"anno":"1913","chi":"Kasimir Fajans e Oswald Göhring; Otto Hahn e Lise Meitner","storia":"Nel 1913 Fajans e Göhring identificarono un isotopo di vita brevissima dell'elemento 91 nella catena di decadimento dell'uranio. Nel 1918 Otto Hahn e Lise Meitner trovarono l'isotopo più stabile e lo chiamarono protoattinio, «prima dell'attinio», perché decadendo si trasforma in attinio.","usi":"Solo ricerca, e datazione dei sedimenti marini.","cur":"Nel 1961 il Regno Unito ne ricavò circa 125 grammi da 60 tonnellate di scorie nucleari: per anni fu quasi tutta la scorta mondiale.","cpk":"00A1FF"},{"z":92,"s":"U","n":"Uranio","en":"Uranium","m":"238.0289","stab":true,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f³ 6d¹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",3],["6d",1]],"gusci":[2,8,18,32,21,9,2],"A":238,"N":146,"ab":"0,992742","t":null,"eneg":1.38,"r":240.0,"ie":6.1941,"ea":null,"ox":"+6, +5, +4, +3","mp":1408.0,"bp":4404.0,"d":18.95,"p":7,"g":null,"b":"f","row":10,"col":6,"anno":"1789","chi":"Martin Heinrich Klaproth","storia":"Nel 1789 Klaproth trovò un nuovo elemento nella pechblenda e lo chiamò uranio, dal pianeta Urano scoperto pochi anni prima. In realtà aveva isolato un ossido: il metallo fu ottenuto dal francese Péligot nel 1841. Nel 1896 Henri Becquerel scoprì la radioattività proprio studiando i sali di uranio.","usi":"Combustibile delle centrali nucleari; l'uranio impoverito si usa come zavorra e schermatura.","cur":"In un reattore, un chilogrammo di uranio-235 libera tanta energia quanta ne darebbero circa 3000 tonnellate di carbone.","cpk":"008FFF"},{"z":93,"s":"Np","n":"Nettunio","en":"Neptunium","m":"237.04817","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f⁴ 6d¹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",4],["6d",1]],"gusci":[2,8,18,32,22,9,2],"A":237,"N":144,"ab":null,"t":"2,14 milioni di anni","eneg":1.36,"r":221.0,"ie":6.2655,"ea":null,"ox":"+6, +5, +4, +3","mp":917.0,"bp":4175.0,"d":20.25,"p":7,"g":null,"b":"f","row":10,"col":7,"anno":"1940","chi":"Edwin McMillan e Philip Abelson","storia":"Nel 1940, a Berkeley, McMillan e Abelson bombardarono l'uranio con neutroni e ottennero il primo elemento più pesante dell'uranio. Come nel Sistema solare Nettuno viene dopo Urano, lo chiamarono nettunio.","usi":"Produzione del plutonio-238 per le batterie nucleari delle sonde spaziali; rivelatori di neutroni.","cur":"Minuscole tracce di nettunio si formano anche in natura, nei minerali di uranio colpiti da neutroni.","cpk":"0080FF"},{"z":94,"s":"Pu","n":"Plutonio","en":"Plutonium","m":"244.06420","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f⁶ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",6]],"gusci":[2,8,18,32,24,8,2],"A":244,"N":150,"ab":null,"t":"81,3 milioni di anni","eneg":1.28,"r":243.0,"ie":6.0258,"ea":null,"ox":"+6, +5, +4, +3","mp":913.0,"bp":3501.0,"d":19.84,"p":7,"g":null,"b":"f","row":10,"col":8,"anno":"1940","chi":"Glenn T. Seaborg e colleghi","storia":"Tra la fine del 1940 e il 1941, a Berkeley, Seaborg, McMillan, Kennedy e Wahl lo produssero bombardando l'uranio con deuteroni. Dopo Nettuno veniva Plutone: da qui il nome. La scoperta rimase segreta fino al 1946 a causa del Progetto Manhattan.","usi":"Combustibile nucleare, armi nucleari; il plutonio-238 alimenta le batterie nucleari di sonde come Voyager e Cassini e dei rover su Marte.","cur":"Seaborg propose per scherzo il simbolo Pu, che in inglese ricorda un'esclamazione di disgusto, e fu accettato.","cpk":"006BFF"},{"z":95,"s":"Am","n":"Americio","en":"Americium","m":"243.06138","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f⁷ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",7]],"gusci":[2,8,18,32,25,8,2],"A":243,"N":148,"ab":null,"t":"7350 anni","eneg":1.3,"r":244.0,"ie":5.9738,"ea":null,"ox":"+6, +5, +4, +3","mp":1449.0,"bp":2284.0,"d":13.69,"p":7,"g":null,"b":"f","row":10,"col":9,"anno":"1944","chi":"Glenn T. Seaborg, Ralph James, Leon Morgan e Albert Ghiorso","storia":"Nel 1944, a Chicago, il gruppo di Seaborg lo ottenne bombardando il plutonio con neutroni, nell'ambito del Progetto Manhattan. Fu chiamato americio dalle Americhe, per analogia con l'europio che gli sta sopra nella tavola.","usi":"Quasi tutti i rilevatori di fumo domestici contengono una minuscola quantità di americio-241.","cur":"Seaborg rivelò la scoperta di americio e curio rispondendo alla domanda di un ragazzo in un programma radiofonico, prima dell'annuncio ufficiale.","cpk":"545CF2"},{"z":96,"s":"Cm","n":"Curio","en":"Curium","m":"247.07035","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f⁷ 6d¹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",7],["6d",1]],"gusci":[2,8,18,32,25,9,2],"A":247,"N":151,"ab":null,"t":"15,6 milioni di anni","eneg":1.3,"r":245.0,"ie":5.9914,"ea":null,"ox":"+3","mp":1618.0,"bp":3400.0,"d":13.51,"p":7,"g":null,"b":"f","row":10,"col":10,"anno":"1944","chi":"Glenn T. Seaborg, Ralph James e Albert Ghiorso","storia":"Nel 1944 il gruppo di Seaborg bombardò il plutonio con particelle alfa e ottenne l'elemento 96. Lo chiamarono curio in onore di Marie e Pierre Curie, pionieri della radioattività.","usi":"Fonte di particelle alfa negli strumenti dei rover marziani che analizzano la composizione delle rocce.","cur":"È così radioattivo che un campione si scalda da solo.","cpk":"785CE3"},{"z":97,"s":"Bk","n":"Berkelio","en":"Berkelium","m":"247.07031","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f⁹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",9]],"gusci":[2,8,18,32,27,8,2],"A":247,"N":150,"ab":null,"t":"1380 anni","eneg":1.3,"r":244.0,"ie":6.1979,"ea":null,"ox":"+4, +3","mp":1323.0,"bp":null,"d":14.0,"p":7,"g":null,"b":"f","row":10,"col":11,"anno":"1949","chi":"Stanley Thompson, Albert Ghiorso e Glenn T. Seaborg","storia":"Nel dicembre 1949, a Berkeley, Thompson, Ghiorso e Seaborg bombardarono l'americio con particelle alfa e ottennero l'elemento 97, chiamato berkelio dalla città di Berkeley.","usi":"Solo ricerca: è servito come bersaglio per produrre il tennesso, l'elemento 117.","cur":"Per scoprire il tennesso, un laboratorio americano produsse 22 milligrammi di berkelio, poi spediti in Russia per l'esperimento.","cpk":"8A4FE3"},{"z":98,"s":"Cf","n":"Californio","en":"Californium","m":"251.07959","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f¹⁰ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",10]],"gusci":[2,8,18,32,28,8,2],"A":251,"N":153,"ab":null,"t":"898 anni","eneg":1.3,"r":245.0,"ie":6.2819,"ea":null,"ox":"+3","mp":1173.0,"bp":null,"d":null,"p":7,"g":null,"b":"f","row":10,"col":12,"anno":"1950","chi":"Stanley Thompson, Kenneth Street, Albert Ghiorso e Glenn T. Seaborg","storia":"Nel 1950, a Berkeley, il gruppo di Seaborg bombardò il curio con particelle alfa e ottenne l'elemento 98, chiamato californio in onore della California e della sua università.","usi":"Il californio-252 è una fonte potentissima di neutroni: serve ad avviare reattori nucleari, a esplorare i pozzi petroliferi e a controllare saldature e bagagli.","cur":"È uno dei materiali più costosi al mondo: decine di milioni di dollari al grammo.","cpk":"A136D4"},{"z":99,"s":"Es","n":"Einsteinio","en":"Einsteinium","m":"252.0830","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f¹¹ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",11]],"gusci":[2,8,18,32,29,8,2],"A":252,"N":153,"ab":null,"t":"471,7 giorni","eneg":1.3,"r":245.0,"ie":6.3676,"ea":null,"ox":"+3","mp":1133.0,"bp":null,"d":null,"p":7,"g":null,"b":"f","row":10,"col":13,"anno":"1952","chi":"Albert Ghiorso e colleghi","storia":"Fu trovato nei detriti della prima bomba all'idrogeno, «Ivy Mike», fatta esplodere nel Pacifico nel novembre 1952. La scoperta rimase segreta fino al 1955. Il nome onora Albert Einstein.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Se ne producono quantità minuscole: un importante studio del 2021 è stato fatto con circa 200 miliardesimi di grammo.","cpk":"B31FD4"},{"z":100,"s":"Fm","n":"Fermio","en":"Fermium","m":"257.09511","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f¹² 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",12]],"gusci":[2,8,18,32,30,8,2],"A":257,"N":157,"ab":null,"t":"100,5 giorni","eneg":1.3,"r":null,"ie":6.5,"ea":null,"ox":"+3","mp":1800.0,"bp":null,"d":null,"p":7,"g":null,"b":"f","row":10,"col":14,"anno":"1952","chi":"Albert Ghiorso e colleghi","storia":"Anche il fermio fu scoperto nei detriti dell'esplosione Ivy Mike del 1952 e rimase segreto per alcuni anni. Il nome onora Enrico Fermi, il fisico italiano che realizzò il primo reattore nucleare.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"È l'elemento più pesante che si possa ottenere bombardando con neutroni elementi più leggeri: per andare oltre servono gli acceleratori.","cpk":"B31FBA"},{"z":101,"s":"Md","n":"Mendelevio","en":"Mendelevium","m":"258.09843","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f¹³ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",13]],"gusci":[2,8,18,32,31,8,2],"A":258,"N":157,"ab":null,"t":"51,6 giorni","eneg":1.3,"r":null,"ie":6.58,"ea":null,"ox":"+3, +2","mp":1100.0,"bp":null,"d":null,"p":7,"g":null,"b":"f","row":10,"col":15,"anno":"1955","chi":"Albert Ghiorso, Bernard Harvey, Gregory Choppin, Stanley Thompson e Glenn T. Seaborg","storia":"Nel 1955, a Berkeley, bombardarono una quantità invisibile di einsteinio con particelle alfa e riconobbero, uno per uno, appena 17 atomi del nuovo elemento. Lo chiamarono mendelevio in onore di Dmitrij Mendeleev, il padre della tavola periodica.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Fu il primo elemento identificato contando i singoli atomi.","cpk":"B30DA6"},{"z":102,"s":"No","n":"Nobelio","en":"Nobelium","m":"259.10100","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f¹⁴ 7s²","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14]],"gusci":[2,8,18,32,32,8,2],"A":259,"N":157,"ab":null,"t":"58 minuti","eneg":1.3,"r":null,"ie":6.6262,"ea":null,"ox":"+3, +2","mp":1100.0,"bp":null,"d":null,"p":7,"g":null,"b":"f","row":10,"col":16,"anno":"1966","chi":"Laboratorio di Dubna (URSS)","storia":"La scoperta fu molto contesa: un gruppo svedese nel 1957 e uno di Berkeley nel 1958 annunciarono di averlo ottenuto, ma i risultati non furono confermati. Le prove sicure vennero dal laboratorio di Dubna, in Unione Sovietica, con esperimenti del 1965-1966. Il nome, proposto dagli svedesi, onora Alfred Nobel.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Il nome nobelio rimase anche se la scoperta svedese era sbagliata.","cpk":"BD0D87"},{"z":103,"s":"Lr","n":"Laurenzio","en":"Lawrencium","m":"262.110","stab":false,"cat":"Attinide","st":"Solido","conf":"[Rn] 5f¹⁴ 7s² 7p¹","cf":"NIST","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["7p",1]],"gusci":[2,8,18,32,32,8,3],"A":266,"N":163,"ab":null,"t":"circa 22 ore","eneg":1.3,"r":null,"ie":4.96,"ea":null,"ox":"+3","mp":1900.0,"bp":null,"d":null,"p":7,"g":null,"b":"f","row":10,"col":17,"anno":"1961","chi":"Albert Ghiorso, Torbjørn Sikkeland, Almon Larsh e Robert Latimer","storia":"Nel 1961, a Berkeley, bombardarono il californio con nuclei di boro e ottennero l'elemento 103. Lo chiamarono laurenzio in onore di Ernest Lawrence, l'inventore del ciclotrone.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Chiude la serie degli attinidi. La sua configurazione è insolita: l'elettrone più esterno sta in un orbitale 7p e non 6d.","cpk":"C70066"},{"z":104,"s":"Rf","n":"Rutherfordio","en":"Rutherfordium","m":"267.122","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Rn] 5f¹⁴ 6d² 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",2]],"gusci":[2,8,18,32,32,10,2],"A":267,"N":163,"ab":null,"t":"circa 2,5 ore","eneg":null,"r":150.0,"ie":null,"ea":null,"ox":"+4","mp":null,"bp":null,"d":null,"p":7,"g":4,"b":"d","row":7,"col":4,"anno":"1969","chi":"Laboratori di Dubna (URSS) e Berkeley (USA)","storia":"Negli anni Sessanta i laboratori di Dubna e di Berkeley si contesero la scoperta, in piena Guerra fredda. Il gruppo di Ghiorso a Berkeley lo produsse nel 1969 bombardando il californio con nuclei di carbonio. Dopo anni di discussioni, nel 1997 fu chiamato rutherfordio, in onore di Ernest Rutherford.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Per decenni ebbe due nomi: i sovietici lo chiamavano kurciatovio, gli americani rutherfordio.","cpk":"CC0059"},{"z":105,"s":"Db","n":"Dubnio","en":"Dubnium","m":"268.126","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Rn] 5f¹⁴ 6d³ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",3]],"gusci":[2,8,18,32,32,11,2],"A":268,"N":163,"ab":null,"t":"circa 29 ore","eneg":null,"r":139.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":5,"b":"d","row":7,"col":5,"anno":"1970","chi":"Laboratori di Dubna (URSS) e Berkeley (USA)","storia":"Anche questa scoperta fu contesa tra Dubna (1968-1970) e Berkeley (1970). Alla fine il merito fu riconosciuto a entrambi e il nome, scelto nel 1997, onora la città russa di Dubna, sede del laboratorio.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Il suo isotopo più stabile dura più di un giorno: moltissimo per un elemento così pesante.","cpk":"D1004F"},{"z":106,"s":"Sg","n":"Seaborgio","en":"Seaborgium","m":"271.134","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Rn] 5f¹⁴ 6d⁴ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",4]],"gusci":[2,8,18,32,32,12,2],"A":269,"N":163,"ab":null,"t":"circa 5 minuti","eneg":null,"r":132.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":6,"b":"d","row":7,"col":6,"anno":"1974","chi":"Albert Ghiorso e colleghi (Berkeley)","storia":"Nel 1974, a Berkeley, il gruppo di Ghiorso bombardò il californio con nuclei di ossigeno e ottenne l'elemento 106. Fu chiamato seaborgio in onore di Glenn T. Seaborg, che partecipò alla scoperta di dieci elementi.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Seaborg fu la prima persona a vedere un elemento chiamato con il proprio nome mentre era ancora in vita.","cpk":"D90045"},{"z":107,"s":"Bh","n":"Bohrio","en":"Bohrium","m":"274.144","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Rn] 5f¹⁴ 6d⁵ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",5]],"gusci":[2,8,18,32,32,13,2],"A":270,"N":163,"ab":null,"t":"circa 4 minuti","eneg":null,"r":128.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":7,"b":"d","row":7,"col":7,"anno":"1981","chi":"Peter Armbruster e Gottfried Münzenberg (GSI, Darmstadt)","storia":"Nel 1981, al centro di ricerca GSI di Darmstadt, in Germania, il gruppo di Münzenberg e Armbruster bombardò il bismuto con nuclei di cromo. Il nome onora Niels Bohr, autore del modello dell'atomo a gusci.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Il modello a gusci che vedi in questa app nasce proprio dalle idee di Bohr.","cpk":"E00038"},{"z":108,"s":"Hs","n":"Hassio","en":"Hassium","m":"277.152","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Rn] 5f¹⁴ 6d⁶ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",6]],"gusci":[2,8,18,32,32,14,2],"A":269,"N":161,"ab":null,"t":"circa 15 secondi","eneg":null,"r":126.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":8,"b":"d","row":7,"col":8,"anno":"1984","chi":"Peter Armbruster e Gottfried Münzenberg (GSI, Darmstadt)","storia":"Nel 1984, al GSI di Darmstadt, bombardarono il piombo con nuclei di ferro. Il nome viene da «Hassia», nome latino dell'Assia, la regione tedesca dove si trova il laboratorio.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Nel 2001 se ne è studiata la chimica, pochi atomi alla volta: forma un tetrossido, proprio come l'osmio che gli sta sopra nella tavola.","cpk":"E6002E"},{"z":109,"s":"Mt","n":"Meitnerio","en":"Meitnerium","m":"278.156","stab":false,"cat":"Metallo di transizione","st":"Solido","conf":"[Rn] 5f¹⁴ 6d⁷ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",7]],"gusci":[2,8,18,32,32,15,2],"A":277,"N":168,"ab":null,"t":"circa 9 secondi","eneg":null,"r":128.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":9,"b":"d","row":7,"col":9,"anno":"1982","chi":"Peter Armbruster e Gottfried Münzenberg (GSI, Darmstadt)","storia":"Nel 1982, al GSI di Darmstadt, bombardarono il bismuto con nuclei di ferro e osservarono un singolo atomo del nuovo elemento. Il nome onora Lise Meitner, la fisica austriaca che spiegò la fissione nucleare.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Il Nobel per la scoperta della fissione andò al solo Otto Hahn: questo nome è anche un riconoscimento al lavoro di Meitner.","cpk":"EB0026"},{"z":110,"s":"Ds","n":"Darmstadtio","en":"Darmstadtium","m":"281.165","stab":false,"cat":"Metallo di transizione","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d⁸ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",8]],"gusci":[2,8,18,32,32,16,2],"A":281,"N":171,"ab":null,"t":"circa 14 secondi","eneg":null,"r":132.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":10,"b":"d","row":7,"col":10,"anno":"1994","chi":"Sigurd Hofmann e colleghi (GSI, Darmstadt)","storia":"Nel 1994, al GSI di Darmstadt, il gruppo di Hofmann bombardò il piombo con nuclei di nichel. Il nome viene dalla città di Darmstadt.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Il suo isotopo più stabile si dimezza in circa 14 secondi.","cpk":""},{"z":111,"s":"Rg","n":"Roentgenio","en":"Roentgenium","m":"282.169","stab":false,"cat":"Metallo di transizione","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d⁹ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",9]],"gusci":[2,8,18,32,32,17,2],"A":282,"N":171,"ab":null,"t":"circa 2 minuti","eneg":null,"r":138.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":11,"b":"d","row":7,"col":11,"anno":"1994","chi":"Sigurd Hofmann e colleghi (GSI, Darmstadt)","storia":"Nel dicembre 1994, al GSI di Darmstadt, bombardarono il bismuto con nuclei di nichel. Il nome onora Wilhelm Röntgen, lo scopritore dei raggi X.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Si trova sotto l'oro nella tavola, ma nessuno ne ha mai visto un campione.","cpk":""},{"z":112,"s":"Cn","n":"Copernicio","en":"Copernicium","m":"285.177","stab":false,"cat":"Metallo di transizione","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10]],"gusci":[2,8,18,32,32,18,2],"A":285,"N":173,"ab":null,"t":"circa 30 secondi","eneg":null,"r":147.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":12,"b":"d","row":7,"col":12,"anno":"1996","chi":"Sigurd Hofmann e colleghi (GSI, Darmstadt)","storia":"Nel 1996, al GSI di Darmstadt, bombardarono il piombo con nuclei di zinco. Il nome, scelto nel 2010, onora Niccolò Copernico, che mise il Sole al centro del Sistema solare.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Esperimenti e calcoli indicano che è molto volatile, a differenza degli altri metalli del suo gruppo, per effetto della relatività sugli elettroni.","cpk":""},{"z":113,"s":"Nh","n":"Nihonio","en":"Nihonium","m":"286.183","stab":false,"cat":"Metallo post-transizionale","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",1]],"gusci":[2,8,18,32,32,18,3],"A":286,"N":173,"ab":null,"t":"circa 12 secondi","eneg":null,"r":170.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":13,"b":"p","row":7,"col":13,"anno":"2004","chi":"Kosuke Morita e colleghi (RIKEN, Giappone)","storia":"Nel 2004 il centro RIKEN, in Giappone, bombardò il bismuto con nuclei di zinco e osservò l'elemento 113; un gruppo russo-americano lo aveva rivelato quasi contemporaneamente in altri esperimenti. Il merito fu riconosciuto al RIKEN e il nome viene da «Nihon», Giappone.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"È il primo elemento scoperto in Asia. In nove anni di esperimenti il RIKEN ne osservò in tutto tre atomi.","cpk":""},{"z":114,"s":"Fl","n":"Flerovio","en":"Flerovium","m":"289.191","stab":false,"cat":"Metallo post-transizionale","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",2]],"gusci":[2,8,18,32,32,18,4],"A":290,"N":176,"ab":null,"t":"circa 80 secondi","eneg":null,"r":180.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":14,"b":"p","row":7,"col":14,"anno":"1999","chi":"Jurij Oganessian e colleghi (Dubna)","storia":"Nel 1999, a Dubna, in collaborazione con il Lawrence Livermore National Laboratory, bombardarono il plutonio con nuclei di calcio-48. Il nome onora Georgij Flerov, fondatore del laboratorio.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Si trova vicino alla cosiddetta «isola di stabilità», una zona dove i nuclei superpesanti dovrebbero vivere più a lungo.","cpk":""},{"z":115,"s":"Mc","n":"Moscovio","en":"Moscovium","m":"290.196","stab":false,"cat":"Metallo post-transizionale","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",3]],"gusci":[2,8,18,32,32,18,5],"A":290,"N":175,"ab":null,"t":"meno di un secondo","eneg":null,"r":187.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":15,"b":"p","row":7,"col":15,"anno":"2003","chi":"Jurij Oganessian e colleghi (Dubna)","storia":"Nel 2003, a Dubna, in collaborazione con Livermore, bombardarono l'americio con nuclei di calcio-48. Il nome viene dalla regione di Mosca, dove si trova Dubna.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"I suoi atomi decadono in meno di un secondo.","cpk":""},{"z":116,"s":"Lv","n":"Livermorio","en":"Livermorium","m":"293.205","stab":false,"cat":"Metallo post-transizionale","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",4]],"gusci":[2,8,18,32,32,18,6],"A":293,"N":177,"ab":null,"t":"circa 70 millisecondi","eneg":null,"r":183.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":16,"b":"p","row":7,"col":16,"anno":"2000","chi":"Jurij Oganessian e colleghi (Dubna)","storia":"Nel 2000, a Dubna, bombardarono il curio con nuclei di calcio-48. Il nome onora il Lawrence Livermore National Laboratory, in California, che collaborò alla scoperta.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"La sua scoperta è frutto della collaborazione tra scienziati russi e americani.","cpk":""},{"z":117,"s":"Ts","n":"Tennesso","en":"Tennessine","m":"294.211","stab":false,"cat":"Alogeno","st":"Previsto solido","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",5]],"gusci":[2,8,18,32,32,18,7],"A":294,"N":177,"ab":null,"t":"circa 70 millisecondi","eneg":null,"r":138.0,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":17,"b":"p","row":7,"col":17,"anno":"2010","chi":"Jurij Oganessian e colleghi (Dubna e Oak Ridge)","storia":"Nel 2010, a Dubna, bombardarono con nuclei di calcio-48 un bersaglio di berkelio prodotto a Oak Ridge, nel Tennessee. Il nome onora lo Stato del Tennessee, sede di Oak Ridge e delle università che collaborarono.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"È l'elemento scoperto più di recente.","cpk":""},{"z":118,"s":"Og","n":"Oganesson","en":"Oganesson","m":"294.214","stab":false,"cat":"Gas nobile","st":"Previsto gas","conf":"[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶","cf":"PubChem (calcolata)","sub":[["1s",2],["2s",2],["2p",6],["3s",2],["3p",6],["4s",2],["3d",10],["4p",6],["5s",2],["4d",10],["5p",6],["6s",2],["4f",14],["5d",10],["6p",6],["7s",2],["5f",14],["6d",10],["7p",6]],"gusci":[2,8,18,32,32,18,8],"A":294,"N":176,"ab":null,"t":"meno di un millisecondo","eneg":null,"r":null,"ie":null,"ea":null,"ox":"","mp":null,"bp":null,"d":null,"p":7,"g":18,"b":"p","row":7,"col":18,"anno":"2006","chi":"Jurij Oganessian e colleghi (Dubna e Livermore)","storia":"I primi atomi furono osservati a Dubna nel 2002 e la scoperta fu annunciata nel 2006, bombardando il californio con nuclei di calcio-48. È l'elemento più pesante conosciuto e chiude il settimo periodo.","usi":"Nessun uso pratico: se ne producono pochissimi atomi alla volta, che servono solo alla ricerca sui nuclei e sugli atomi.","cur":"Con il seaborgio è l'unico elemento dedicato a una persona ancora in vita al momento della scelta del nome: il fisico Jurij Oganessian.","cpk":""}];
+</script>
+<script>
+'use strict';
+/* Atlante della materia: tavola, ricerca, scheda elemento e visore 3D (canvas 2D, nessuna libreria). */
+
+const FAMIGLIE = [
+  ['Metallo alcalino', '--alcalino'], ['Metallo alcalino-terroso', '--alcalino-terroso'],
+  ['Metallo di transizione', '--transizione'], ['Metallo post-transizionale', '--post-transizione'],
+  ['Semimetallo', '--semimetallo'], ['Non metallo', '--non-metallo'], ['Alogeno', '--alogeno'],
+  ['Gas nobile', '--gas-nobile'], ['Lantanide', '--lantanide'], ['Attinide', '--attinide'],
+];
+const COLORE = Object.fromEntries(FAMIGLIE.map(([n, v]) => [n, 'var(' + v + ')']));
+const PLURALE = {'Metallo alcalino': 'Metalli alcalini', 'Metallo alcalino-terroso': 'Metalli alcalino-terrosi',
+  'Metallo di transizione': 'Metalli di transizione', 'Metallo post-transizionale': 'Metalli post-transizionali',
+  'Semimetallo': 'Semimetalli', 'Non metallo': 'Non metalli', 'Alogeno': 'Alogeni', 'Gas nobile': 'Gas nobili',
+  'Lantanide': 'Lantanidi', 'Attinide': 'Attinidi'};
+const $ = (id) => document.getElementById(id);
+const MENO_MOTO = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- formattazione ---------- */
+function numero(x, dec) {
+  let s = Math.abs(x).toFixed(dec);
+  let [i, d] = s.split('.');
+  if (i.length > 4) i = i.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (x < 0 ? '−' : '') + i + (d ? ',' + d : '');
+}
+function significative(x, n) {
+  if (x === 0) return '0';
+  const dec = Math.max(0, n - 1 - Math.floor(Math.log10(Math.abs(x))));
+  return numero(x, Math.min(dec, 6));
+}
+const ignoto = (t) => '<span class="ignoto">' + (t || 'non noto') + '</span>';
+function articolo(nome) {
+  const n = nome.toLowerCase();
+  if (/^[aeiouh]/.test(n)) return "dell'" + n;
+  if (/^(s[^aeiou]|z|x|gn|ps|pn|y)/.test(n)) return 'dello ' + n;
+  return 'del ' + n;
+}
+function percento(ab) {
+  const v = ab.replace(/[\[\]]/g, '').split(';').map((x) => parseFloat(x.trim().replace(',', '.')));
+  const fmt = (x, d) => (x === 1 ? '100' : numero(x * 100, d).replace(/,?0+$/, '')) + '%';
+  let d = 1;
+  const ok = (x) => x === 1 || x * 100 < 99.95 || parseFloat((x * 100).toFixed(d)) < 100;
+  while (d < 5 && (!v.every(ok) || (v.length === 2 && fmt(v[0], d) === fmt(v[1], d)))) d++;
+  if (v.length === 2) return 'tra il ' + fmt(v[0], d) + ' e il ' + fmt(v[1], d);
+  return 'il ' + fmt(v[0], d);
+}
+/* ---------- tavola ---------- */
+const tavola = $('tavola');
+function costruisciTavola() {
+  const frag = document.createDocumentFragment();
+  const add = (el, r, c) => { el.style.gridRow = r; el.style.gridColumn = c; frag.appendChild(el); };
+  for (let g = 1; g <= 18; g++) { const d = document.createElement('div'); d.className = 'gr'; d.textContent = g; d.setAttribute('aria-hidden', 'true'); add(d, 1, g + 1); }
+  for (let p = 1; p <= 7; p++) { const d = document.createElement('div'); d.className = 'pe'; d.textContent = p; d.setAttribute('aria-hidden', 'true'); add(d, p + 1, 1); }
+  const sep = document.createElement('div'); sep.className = 'f-sep'; add(sep, 9, '1 / -1');
+  for (const [r, txt, fam] of [[7, '57–71', 'Lantanide'], [8, '89–103', 'Attinide']]) {
+    const d = document.createElement('div'); d.className = 'cella segnaposto'; d.style.setProperty('--c', COLORE[fam]);
+    d.setAttribute('aria-hidden', 'true'); d.innerHTML = '<span class="cn" style="display:block">' + txt + '</span>'; add(d, r, 4);
+  }
+  for (const e of ELEMENTI) {
+    const b = document.createElement('button');
+    b.className = 'cella'; b.dataset.z = e.z; b.style.background = COLORE[e.cat];
+    b.setAttribute('aria-label', e.z + ', ' + e.n + ', ' + e.s);
+    b.innerHTML = '<span class="cz">' + e.z + '</span>' + e.s + '<span class="cn">' + e.n + '</span>';
+    add(b, e.row < 9 ? e.row + 1 : e.row + 1, e.col + 1);
+  }
+  tavola.appendChild(frag);
+  tavola.addEventListener('click', (ev) => {
+    const c = ev.target.closest('.cella[data-z]');
+    if (c && !tocco.attivo) apri(+c.dataset.z);
+  });
+}
+
+/* lente sulla tavola: con il dito appoggiato mostra l'elemento sotto il dito, al rilascio lo apre */
+const lente = $('lente');
+const tocco = { attivo: false, z: 0 };
+function sottoDito(x, y) {
+  const el = document.elementFromPoint(x, y);
+  const c = el && el.closest && el.closest('.cella[data-z]');
+  return c ? +c.dataset.z : 0;
+}
+let cellaSotto = null;
+function mostraLente(x, y, z) {
+  if (cellaSotto) cellaSotto.classList.remove('sotto');
+  cellaSotto = z ? tavola.querySelector('.cella[data-z="' + z + '"]') : null;
+  if (cellaSotto) cellaSotto.classList.add('sotto');
+  if (!z) { lente.hidden = true; return; }
+  const e = ELEMENTI[z - 1];
+  lente.innerHTML = '<div class="lz">' + e.z + '</div><div class="ls">' + e.s + '</div><div class="ln">' + e.n +
+    '</div><div class="lc"><i style="background:' + COLORE[e.cat] + '"></i>' + e.cat + '</div>';
+  lente.hidden = false;
+  const w = lente.offsetWidth, h = lente.offsetHeight;
+  let lx = Math.min(Math.max(8, x - w / 2), innerWidth - w - 8);
+  let ly = y - h - 56; if (ly < 8) ly = y + 48;
+  lente.style.left = lx + 'px'; lente.style.top = ly + 'px';
+}
+const wrap = document.querySelector('.tavola-wrap');
+wrap.addEventListener('pointerdown', (ev) => {
+  if (ev.pointerType === 'mouse') return;
+  tocco.attivo = true; tocco.z = sottoDito(ev.clientX, ev.clientY);
+  try { wrap.setPointerCapture(ev.pointerId); } catch (_) { /* puntatore gia' rilasciato */ }
+  mostraLente(ev.clientX, ev.clientY, tocco.z);
+});
+wrap.addEventListener('pointermove', (ev) => {
+  if (!tocco.attivo) return;
+  tocco.z = sottoDito(ev.clientX, ev.clientY);
+  mostraLente(ev.clientX, ev.clientY, tocco.z);
+});
+function fineTocco(apriloh) {
+  if (!tocco.attivo) return;
+  lente.hidden = true;
+  if (cellaSotto) { cellaSotto.classList.remove('sotto'); cellaSotto = null; }
+  const z = tocco.z;
+  setTimeout(() => { tocco.attivo = false; }, 0);
+  if (apriloh && z) apri(z);
+}
+wrap.addEventListener('pointerup', () => fineTocco(true));
+wrap.addEventListener('pointercancel', () => fineTocco(false));
+
+/* legenda: evidenzia una famiglia */
+let famigliaAttiva = null;
+function costruisciLegenda() {
+  const l = $('legenda');
+  for (const [nome] of FAMIGLIE) {
+    const b = document.createElement('button');
+    b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<i style="background:' + COLORE[nome] + '"></i>' + PLURALE[nome];
+    b.onclick = () => {
+      famigliaAttiva = famigliaAttiva === nome ? null : nome;
+      for (const x of l.children) x.setAttribute('aria-pressed', String(x === b && famigliaAttiva !== null));
+      $('cerca').value = ''; $('risultati').innerHTML = '';
+      evidenzia((e) => !famigliaAttiva || e.cat === famigliaAttiva);
+    };
+    l.appendChild(b);
+  }
+}
+function evidenzia(filtro) {
+  for (const c of tavola.querySelectorAll('.cella[data-z]')) c.classList.toggle('attenuata', !filtro(ELEMENTI[c.dataset.z - 1]));
+}
+
+/* ricerca */
+const normalizza = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+$('cerca').addEventListener('input', (ev) => {
+  const q = normalizza(ev.target.value);
+  const ris = $('risultati');
+  ris.innerHTML = '';
+  if (famigliaAttiva) { famigliaAttiva = null; for (const x of $('legenda').children) x.setAttribute('aria-pressed', 'false'); }
+  if (!q) { evidenzia(() => true); return; }
+  const corrisponde = (e) => String(e.z) === q || normalizza(e.s) === q || normalizza(e.n).startsWith(q) ||
+    normalizza(e.en).startsWith(q) || (q.length > 2 && normalizza(e.n).includes(q));
+  const trovati = ELEMENTI.filter(corrisponde);
+  trovati.sort((a, b) => (normalizza(b.s) === q) - (normalizza(a.s) === q));
+  evidenzia(corrisponde);
+  if (!trovati.length) { ris.innerHTML = '<li class="vuoto">Nessun elemento corrisponde a «' + ev.target.value.replace(/[<&]/g, '') + '».</li>'; return; }
+  for (const e of trovati.slice(0, 6)) {
+    const li = document.createElement('li');
+    li.innerHTML = '<button><span class="rz">' + e.z + '</span><span class="rs">' + e.s + '</span><span>' + e.n + '</span></button>';
+    li.firstChild.onclick = () => apri(e.z);
+    ris.appendChild(li);
+  }
+});
+$('cerca').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter') { const b = $('risultati').querySelector('button'); if (b) b.click(); }
+});
+
+/* ---------- navigazione ---------- */
+function apri(z) { location.hash = '#/' + z; }
+function instrada() {
+  const m = location.hash.match(/^#\/(\d+)$/);
+  const z = m ? +m[1] : 0;
+  if (z >= 1 && z <= 118) {
+    $('vista-tavola').hidden = true; $('vista-elemento').hidden = false;
+    mostraElemento(ELEMENTI[z - 1]);
+    scrollTo(0, 0);
+  } else {
+    $('vista-elemento').hidden = true; $('vista-tavola').hidden = false;
+    visore.ferma();
+    document.title = 'Atlante della materia';
+  }
+}
+$('torna').onclick = () => { location.hash = '#/'; };
+addEventListener('hashchange', instrada);
+
+/* ---------- scheda elemento ---------- */
+const LETTERE_GUSCI = 'KLMNOPQ';
+let corrente = null;
+function mostraElemento(e) {
+  corrente = e;
+  document.title = e.n + ' (' + e.s + ') · Atlante della materia';
+  const prec = ELEMENTI[e.z - 2], succ = ELEMENTI[e.z];
+  $('prec').hidden = !prec; $('succ').hidden = !succ;
+  if (prec) { $('prec').querySelector('span').innerHTML = '<b>' + prec.s + '</b>'; $('prec').setAttribute('aria-label', 'Elemento precedente: ' + prec.n); $('prec').onclick = () => apri(prec.z); }
+  if (succ) { $('succ').querySelector('span').innerHTML = '<b>' + succ.s + '</b>'; $('succ').setAttribute('aria-label', 'Elemento successivo: ' + succ.n); $('succ').onclick = () => apri(succ.z); }
+
+  const t = $('tessera');
+  t.style.background = COLORE[e.cat];
+  t.querySelector('.tz').textContent = e.z;
+  t.querySelector('.ts').textContent = e.s;
+  t.querySelector('.tm').textContent = e.stab ? numero(parseFloat(e.m), Math.min(3, (e.m.split('.')[1] || '').length)) : '[' + e.A + ']';
+  $('nome').textContent = e.n;
+  $('inglese').textContent = 'In inglese: ' + e.en;
+  $('famiglia').innerHTML = '<i style="background:' + COLORE[e.cat] + '"></i>' + e.cat +
+    (e.g ? ', gruppo ' + e.g : (e.cat === 'Lantanide' ? ', serie dei lantanidi' : ', serie degli attinidi')) + ', periodo ' + e.p;
+
+  $('composizione').innerHTML =
+    '<div style="--k:var(--protone)"><b>' + e.z + '</b><span>' + (e.z === 1 ? 'protone' : 'protoni') + '</span></div>' +
+    '<div style="--k:var(--neutrone)"><b>' + e.N + '</b><span>' + (e.N === 1 ? 'neutrone' : 'neutroni') + '</span></div>' +
+    '<div style="--k:var(--elettrone)"><b>' + e.z + '</b><span>' + (e.z === 1 ? 'elettrone' : 'elettroni') + '</span></div>';
+  const nomeIso = e.n.toLowerCase() + '-' + e.A;
+  let iso;
+  if (e.ab) {
+    iso = 'Protoni ed elettroni sono sempre ' + e.z + ' (nell\'atomo neutro). I neutroni possono variare: qui sono quelli dell\'isotopo più abbondante, ' +
+      nomeIso + ', che costituisce ' + percento(e.ab) + ' ' + articolo(e.n) + ' naturale' + (e.ab.startsWith('[') ? ' (la quota varia un po\' secondo la provenienza).' : '.');
+    if ([90, 91, 92].includes(e.z)) iso += ' Tutti i suoi isotopi sono radioattivi.';
+  } else {
+    iso = 'Protoni ed elettroni sono sempre ' + e.z + ' (nell\'atomo neutro). L\'elemento non ha isotopi stabili: i neutroni sono quelli dell\'isotopo più stabile, ' +
+      nomeIso + ', che si dimezza in ' + e.t + '.';
+  }
+  $('isotopo').textContent = iso;
+
+  $('gusci').innerHTML = e.gusci.map((n, i) => '<div><dt>' + LETTERE_GUSCI[i] + '</dt><dd>' + n + '</dd></div>').join('');
+  $('config').textContent = e.conf;
+  $('config-fonte').textContent = 'Configurazione elettronica dello stato fondamentale. Elettroni per guscio, dal più interno (K) al più esterno. ' +
+    (e.cf === 'NIST' ? 'Fonte: NIST.' : 'Valore calcolato, non ancora misurato (fonte: PubChem).');
+
+  $('proprieta').innerHTML = proprieta(e);
+  $('anno').textContent = e.anno;
+  $('chi').textContent = e.chi;
+  $('storia').textContent = e.storia;
+  $('usi').textContent = e.usi;
+  $('curiosita').textContent = e.cur;
+
+  costruisciOrbitali(e);
+  visore.carica(e);
+  impostaVista(vistaCorrente);
+}
+
+function temperatura(k) {
+  if (k == null) return ignoto();
+  const c = k - 273.15;
+  return numero(c, Math.abs(c) < 100 ? 1 : 0) + ' °C <small>(' + numero(k, k < 100 ? 2 : 0) + ' K)</small>';
+}
+function proprieta(e) {
+  const gas = /gas/i.test(e.st);
+  const voci = [
+    ['Massa atomica', e.stab ? numero(parseFloat(e.m), (e.m.split('.')[1] || '').length) + ' u' : '[' + e.A + '] <small>numero di massa</small>',
+      e.stab ? 'Massa media di un atomo, in unità di massa atomica.' : 'Senza isotopi stabili si indica il numero di massa dell\'isotopo più stabile.'],
+    ['Stato a temperatura ambiente', e.st.startsWith('Previsto') ? '<span class="ignoto">' + e.st.toLowerCase() + '</span>' : e.st, ''],
+    ['Fusione', temperatura(e.mp), e.z === 2 ? 'L\'elio solidifica solo sotto pressione.' : ''],
+    ['Ebollizione', temperatura(e.bp), ''],
+    ['Densità', e.d == null ? ignoto('non misurata') : (gas ? significative(e.d * 1000, 3) + ' g/L' : significative(e.d, 4) + ' g/cm³'),
+      gas ? 'Per i gas si indica in grammi per litro.' : ''],
+    ['Elettronegatività', e.eneg == null ? ignoto() : numero(e.eneg, 2),
+      'Scala di Pauling: quanto l\'atomo attira verso di sé gli elettroni di un legame.'],
+    ['Energia di prima ionizzazione', e.ie == null ? ignoto('non misurata') : numero(e.ie, 2) + ' eV <small>(' + numero(e.ie * 96.4853, 0) + ' kJ/mol)</small>',
+      'Energia necessaria per strappare l\'elettrone più esterno all\'atomo isolato.'],
+    ['Affinità elettronica', e.ea == null ? ignoto() : numero(e.ea, 2) + ' eV <small>(' + numero(e.ea * 96.4853, 0) + ' kJ/mol)</small>',
+      'Energia liberata quando l\'atomo isolato acquista un elettrone.'],
+    ['Raggio atomico', e.r == null ? ignoto() : e.r + ' pm', 'Raggio di van der Waals, in picometri (miliardesimi di millimetro).'],
+    ['Stati di ossidazione', e.ox ? e.ox.replace(/\s*,\s*/g, ', ') : ignoto(), 'Le cariche che l\'atomo assume più spesso nei composti.'],
+    ['Posizione', (e.g ? 'Gruppo ' + e.g : (e.cat === 'Lantanide' ? 'Lantanidi' : 'Attinidi')) + ', periodo ' + e.p + ', blocco ' + e.b, ''],
+  ];
+  return voci.map(([t, v, p]) => '<div><dt>' + t + '</dt><dd>' + v + '</dd>' + (p ? '<p>' + p + '</p>' : '') + '</div>').join('');
+}
+
+/* ---------- viste del visore ---------- */
+let vistaCorrente = 'atomo';
+const schede = document.querySelectorAll('.schede button');
+for (const b of schede) b.onclick = () => impostaVista(b.dataset.vista);
+function impostaVista(v) {
+  vistaCorrente = v;
+  for (const b of schede) b.setAttribute('aria-selected', String(b.dataset.vista === v));
+  $('scelta-orbitali').hidden = v !== 'orbitali';
+  visore.vista(v);
+  aggiornaDidascalia();
+}
+const NOMI_M = {
+  s: ['s'], p: ['px', 'py', 'pz'], d: ['dxy', 'dyz', 'dxz', 'dx²−y²', 'dz²'],
+  f: ['fz³', 'fxz²', 'fyz²', 'fxyz', 'fz(x²−y²)', 'fx(x²−3y²)', 'fy(3x²−y²)'],
+};
+const scelta = { sub: '1s', m: 0 };
+function costruisciOrbitali(e) {
+  const box = $('sottolivelli');
+  box.innerHTML = '';
+  scelta.sub = e.sub[e.sub.length - 1][0];
+  scelta.m = 0;
+  for (const [s, n] of e.sub) {
+    const b = document.createElement('button');
+    b.innerHTML = s + '<sup>' + n + '</sup>';
+    b.setAttribute('aria-label', 'Sottolivello ' + s + ' con ' + n + (n === 1 ? ' elettrone' : ' elettroni'));
+    b.onclick = () => { scelta.sub = s; scelta.m = 0; aggiornaOrbitali(); };
+    b.dataset.s = s;
+    box.appendChild(b);
+  }
+  aggiornaOrbitali(true);
+}
+function aggiornaOrbitali(soloInterfaccia) {
+  for (const b of $('sottolivelli').children) b.setAttribute('aria-pressed', String(b.dataset.s === scelta.sub));
+  const l = scelta.sub[1];
+  const m = $('orbitali-m');
+  m.innerHTML = '';
+  if (l !== 's') {
+    NOMI_M[l].forEach((nome, i) => {
+      const b = document.createElement('button');
+      b.textContent = nome.replace(/^([pdf])/, scelta.sub[0] + '$1');
+      b.setAttribute('aria-pressed', String(i === scelta.m));
+      b.onclick = () => { scelta.m = i; aggiornaOrbitali(); };
+      m.appendChild(b);
+    });
+  }
+  visore.orbitale(+scelta.sub[0], 'spdf'.indexOf(l), scelta.m);
+  if (!soloInterfaccia) aggiornaDidascalia();
+}
+function aggiornaDidascalia() {
+  const e = corrente; if (!e) return;
+  let t;
+  if (vistaCorrente === 'atomo') {
+    t = 'Modello a gusci: ' + e.gusci.length + (e.gusci.length === 1 ? ' guscio' : ' gusci') + ' attorno al nucleo. È una semplificazione: gli elettroni non girano su orbite, ma occupano orbitali (guarda la vista Orbitali). Trascina per ruotare.';
+  } else if (vistaCorrente === 'nucleo') {
+    t = 'Nucleo di ' + e.n.toLowerCase() + '-' + e.A + ': ' + e.z + (e.z === 1 ? ' protone' : ' protoni') + ' (rossi) e ' + e.N + (e.N === 1 ? ' neutrone' : ' neutroni') + ' (grigi). In scala reale il nucleo è circa centomila volte più piccolo dell\'atomo.';
+  } else {
+    const n = (e.sub.find((x) => x[0] === scelta.sub) || [0, 0])[1];
+    const l = scelta.sub[1];
+    const quanti = {s: 1, p: 3, d: 5, f: 7}[l];
+    const nome = l === 's' ? scelta.sub : NOMI_M[l][scelta.m].replace(/^([pdf])/, scelta.sub[0] + '$1');
+    t = 'Orbitale ' + nome + '. Il sottolivello ' + scelta.sub + ' ha ' + quanti + (quanti === 1 ? ' orbitale' : ' orbitali') + ' e qui contiene ' + n + (n === 1 ? ' elettrone' : ' elettroni') +
+      '. La nuvola mostra dove è probabile trovare l\'elettrone; i due colori indicano zone in cui la funzione d\'onda ha segno opposto. Forma calcolata con il modello dell\'atomo di idrogeno.';
+  }
+  $('didascalia').textContent = t;
+}
+
+/* ---------- visore 3D ---------- */
+const visore = (() => {
+  const cv = $('visore');
+  const ctx = cv.getContext('2d');
+  let W = 0, dpr = 1;
+  let el = null, modo = 'atomo';
+  let yaw = 0.6, pitch = -0.35, auto = !MENO_MOTO;
+  let t0 = performance.now(), tempo = 0, animando = false, visibile = true;
+  let nucleoni = [], nubi = [];
+
+  function dimensiona() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = cv.clientWidth || 360;
+    if (w * dpr !== cv.width) { cv.width = cv.height = Math.round(w * dpr); }
+    W = cv.width;
+  }
+
+  // sfere ombreggiate prerenderizzate (una per colore)
+  const sprite = {};
+  function sfera(col) {
+    if (sprite[col]) return sprite[col];
+    const s = document.createElement('canvas'); s.width = s.height = 96;
+    const g = s.getContext('2d');
+    const gr = g.createRadialGradient(34, 32, 4, 48, 48, 48);
+    gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.18, col); gr.addColorStop(0.85, ombra(col, 0.55)); gr.addColorStop(1, ombra(col, 0.35));
+    g.fillStyle = gr; g.beginPath(); g.arc(48, 48, 47, 0, 7); g.fill();
+    return (sprite[col] = s);
+  }
+  function ombra(hex, f) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = (n >> 16) * f, gg = ((n >> 8) & 255) * f, b = (n & 255) * f;
+    return 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')';
+  }
+  const C = { p: '#E0553D', n: '#A7B6C2', e: '#F4C542', neg: '#6FB7D9' };
+
+  // generatore pseudo-casuale riproducibile
+  function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+  // nucleo: protoni e neutroni come sfere di diametro 1, compattate in una palla per rilassamento
+  let fattoreSfera = 1;
+  function preparaNucleo(e) {
+    const A = e.A, r = rng(e.z * 7919 + A);
+    const tipi = Array(A).fill('n'); for (let i = 0; i < e.z; i++) tipi[i] = 'p';
+    for (let i = A - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [tipi[i], tipi[j]] = [tipi[j], tipi[i]]; }
+    const P = new Float64Array(3 * A), Rb = 0.75 * Math.cbrt(A);
+    for (let i = 0; i < A; i++) {
+      let x, y, z; do { x = 2 * r() - 1; y = 2 * r() - 1; z = 2 * r() - 1; } while (x * x + y * y + z * z > 1);
+      P[3 * i] = x * Rb; P[3 * i + 1] = y * Rb; P[3 * i + 2] = z * Rb;
+    }
+    const D = 0.97;
+    for (let it = 0; it < 70 && A > 1; it++) {
+      for (let i = 0; i < 3 * A; i++) P[i] *= 0.975;
+      for (let pass = 0; pass < 2; pass++) {
+        for (let i = 0; i < A; i++) for (let j = i + 1; j < A; j++) {
+          const dx = P[3 * j] - P[3 * i], dy = P[3 * j + 1] - P[3 * i + 1], dz = P[3 * j + 2] - P[3 * i + 2];
+          const d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 < D * D) {
+            const d = Math.sqrt(d2) || 1e-3, k = (D - d) / (2 * d);
+            P[3 * i] -= dx * k; P[3 * i + 1] -= dy * k; P[3 * i + 2] -= dz * k;
+            P[3 * j] += dx * k; P[3 * j + 1] += dy * k; P[3 * j + 2] += dz * k;
+          }
+        }
+      }
+    }
+    let cx = 0, cy = 0, cz = 0;
+    for (let i = 0; i < A; i++) { cx += P[3 * i]; cy += P[3 * i + 1]; cz += P[3 * i + 2]; }
+    cx /= A; cy /= A; cz /= A;
+    let rmax = 0;
+    for (let i = 0; i < A; i++) rmax = Math.max(rmax, Math.hypot(P[3 * i] - cx, P[3 * i + 1] - cy, P[3 * i + 2] - cz));
+    const norma = rmax + 0.5;
+    fattoreSfera = 0.5 / norma;
+    nucleoni = [];
+    for (let i = 0; i < A; i++) nucleoni.push({ x: (P[3 * i] - cx) / norma, y: (P[3 * i + 1] - cy) / norma, z: (P[3 * i + 2] - cz) / norma, t: tipi[i] });
+  }
+
+  // assi dei gusci: ogni guscio ha un piano inclinato diverso
+  function pianoGuscio(i) {
+    const a = i * 2.2 + 0.4, b = 0.5 + 0.35 * Math.sin(i * 1.7);
+    const nx = Math.sin(b) * Math.cos(a), ny = Math.cos(b), nz = Math.sin(b) * Math.sin(a);
+    // due vettori ortonormali nel piano
+    let ux = -nz, uy = 0, uz = nx; const lu = Math.hypot(ux, uy, uz) || 1; ux /= lu; uz /= lu;
+    const vx = ny * uz - nz * uy, vy = nz * ux - nx * uz, vz = nx * uy - ny * ux;
+    return { u: [ux, uy, uz], v: [vx, vy, vz] };
+  }
+
+  /* ----- orbitali (modello idrogenoide, Z = 1) ----- */
+  function laguerre(k, a, x) {
+    if (k === 0) return 1;
+    let l0 = 1, l1 = 1 + a - x;
+    for (let i = 1; i < k; i++) { const l2 = ((2 * i + 1 + a - x) * l1 - (i + a) * l0) / (i + 1); l0 = l1; l1 = l2; }
+    return l1;
+  }
+  const radiale = (n, l, r) => { const rho = 2 * r / n; return Math.pow(rho, l) * Math.exp(-rho / 2) * laguerre(n - l - 1, 2 * l + 1, rho); };
+  const ANG = [
+    [() => 1],
+    [(x) => x, (x, y) => y, (x, y, z) => z],
+    [(x, y) => x * y, (x, y, z) => y * z, (x, y, z) => x * z, (x, y) => (x * x - y * y) / 2, (x, y, z) => (3 * z * z - 1) / (2 * Math.sqrt(3))],
+    [(x, y, z) => z * (5 * z * z - 3), (x, y, z) => x * (5 * z * z - 1), (x, y, z) => y * (5 * z * z - 1), (x, y, z) => x * y * z,
+      (x, y, z) => z * (x * x - y * y), (x, y) => x * (x * x - 3 * y * y), (x, y) => y * (3 * x * x - y * y)],
+  ];
+  let chiaveNube = '';
+  function preparaOrbitale(n, l, m) {
+    const key = n + '-' + l + '-' + m;
+    if (key === chiaveNube) return;
+    chiaveNube = key;
+    const r = rng(n * 131 + l * 17 + m);
+    const rmax = 4 * n * n + 12, M = 1400;
+    const cum = new Float64Array(M + 1);
+    for (let i = 1; i <= M; i++) { const rr = (i - 0.5) * rmax / M; const R = radiale(n, l, rr); cum[i] = cum[i - 1] + rr * rr * R * R; }
+    const tot = cum[M];
+    let r99 = rmax;
+    for (let i = 1; i <= M; i++) if (cum[i] >= 0.92 * tot) { r99 = i * rmax / M; break; }  // nuvola che contiene il 92% della probabilita'
+    const Y = ANG[l][m];
+    let ymax = 0;
+    for (let i = 0; i < 4000; i++) { const zz = 2 * r() - 1, ph = 6.2832 * r(), s = Math.sqrt(1 - zz * zz); const v = Y(s * Math.cos(ph), s * Math.sin(ph), zz); ymax = Math.max(ymax, v * v); }
+    ymax *= 1.05;
+    const N = 6000;
+    nubi = [];
+    let guard = 0;
+    while (nubi.length < N && guard++ < N * 60) {
+      const zz = 2 * r() - 1, ph = 6.2832 * r(), s = Math.sqrt(1 - zz * zz);
+      const x = s * Math.cos(ph), y = s * Math.sin(ph);
+      const v = Y(x, y, zz);
+      if (r() * ymax > v * v) continue;
+      // raggio dalla distribuzione radiale (inversione della cumulata)
+      const u = r() * 0.92 * tot;
+      let lo = 0, hi = M;
+      while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (cum[mid] < u) lo = mid; else hi = mid; }
+      const rr = (lo + r()) * rmax / M;
+      const segno = Math.sign(radiale(n, l, rr) * v) || 1;
+      const k = rr / r99;
+      nubi.push({ x: x * k, y: -zz * k, z: y * k, s: segno });
+    }
+  }
+
+  /* ----- disegno ----- */
+  function proietta(x, y, z) {
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+    const y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+    const f = 3.2 / (3.2 - z2);
+    return [x1 * f, y2 * f, z2, f];
+  }
+
+  function sfondo() {
+    const c = W / 2, R = W * 0.485;
+    ctx.clearRect(0, 0, W, W);
+    const g = ctx.createRadialGradient(c, c * 0.92, R * 0.1, c, c, R);
+    g.addColorStop(0, '#16344A'); g.addColorStop(1, '#0B1D2A');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R, 0, 7); ctx.fill();
+    // ghiera graduata
+    ctx.strokeStyle = 'rgba(31,43,49,.85)'; ctx.lineWidth = 1.2 * dpr;
+    ctx.beginPath(); ctx.arc(c, c, R + 1.5 * dpr, 0, 7); ctx.stroke();
+    ctx.strokeStyle = 'rgba(31,43,49,.55)'; ctx.lineWidth = 1 * dpr;
+    for (let i = 0; i < 72; i++) {
+      const a = i / 72 * Math.PI * 2, l = (i % 6 === 0 ? 7 : 3.5) * dpr;
+      ctx.beginPath(); ctx.moveTo(c + Math.cos(a) * (R + 4 * dpr), c + Math.sin(a) * (R + 4 * dpr));
+      ctx.lineTo(c + Math.cos(a) * (R + 4 * dpr + l), c + Math.sin(a) * (R + 4 * dpr + l)); ctx.stroke();
+    }
+    ctx.save(); ctx.beginPath(); ctx.arc(c, c, R, 0, 7); ctx.clip();
+  }
+
+  function disegnaNucleo(scala, R, cx, cy, dimSfera) {
+    const pts = nucleoni.map((p) => { const q = proietta(p.x * scala, p.y * scala, p.z * scala); return [q[0] * R, q[1] * R, q[2] / (scala || 1), q[3], p.t]; });
+    pts.sort((a, b) => a[2] - b[2]);
+    for (const [x, y, z, f, t] of pts) {
+      const r = dimSfera * f;
+      ctx.globalAlpha = 0.55 + 0.45 * Math.min(1, Math.max(0, (z + 1) / 2));
+      ctx.drawImage(sfera(C[t]), cx + x - r, cy + y - r, 2 * r, 2 * r);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function disegnaAtomo() {
+    const c = W / 2, R = W * 0.43;
+    const k = el.gusci.length;
+    const raggi = el.gusci.map((_, i) => R * (0.24 + 0.76 * (i + 1) / k));
+    const nucleoR = Math.max(W * 0.018, Math.min(W * 0.07, raggi[0] * 0.42));
+    const dimSfera = nucleoR * fattoreSfera;
+    const voci = [];
+    el.gusci.forEach((ne, i) => {
+      const { u, v } = pianoGuscio(i);
+      const rad = raggi[i] / R;
+      const P = (a) => [rad * (Math.cos(a) * u[0] + Math.sin(a) * v[0]), rad * (Math.cos(a) * u[1] + Math.sin(a) * v[1]), rad * (Math.cos(a) * u[2] + Math.sin(a) * v[2])];
+      const S = 120;
+      for (let s = 0; s < S; s++) {
+        const a0 = s / S * 6.2832, a1 = (s + 1) / S * 6.2832;
+        const p0 = proietta(...P(a0)), p1 = proietta(...P(a1));
+        voci.push({ z: (p0[2] + p1[2]) / 2, tipo: 'l', a: p0, b: p1 });
+      }
+      const vel = (MENO_MOTO ? 0 : 0.9) / Math.pow(i + 1, 0.8);
+      for (let j = 0; j < ne; j++) {
+        const q = proietta(...P(j / ne * 6.2832 + tempo * vel + i * 0.7));
+        voci.push({ z: q[2], tipo: 'e', p: q });
+      }
+    });
+    voci.push({ z: 0, tipo: 'n' });
+    voci.sort((a, b) => a.z - b.z);
+    const er = Math.max(2.2 * dpr, W * 0.0105);
+    for (const it of voci) {
+      if (it.tipo === 'l') {
+        const prof = (it.z + 1) / 2;
+        ctx.strokeStyle = 'rgba(190,210,225,' + (0.14 + 0.32 * prof).toFixed(3) + ')';
+        ctx.lineWidth = 1.1 * dpr;
+        ctx.beginPath(); ctx.moveTo(c + it.a[0] * R, c + it.a[1] * R); ctx.lineTo(c + it.b[0] * R, c + it.b[1] * R); ctx.stroke();
+      } else if (it.tipo === 'e') {
+        const r = er * it.p[3];
+        ctx.globalAlpha = 0.6 + 0.4 * (it.z + 1) / 2;
+        ctx.drawImage(sfera(C.e), c + it.p[0] * R - r, c + it.p[1] * R - r, 2 * r, 2 * r);
+        ctx.globalAlpha = 1;
+      } else {
+        const g = ctx.createRadialGradient(c, c, 0, c, c, nucleoR * 2.6);
+        g.addColorStop(0, 'rgba(224,85,61,.28)'); g.addColorStop(1, 'rgba(224,85,61,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, nucleoR * 2.6, 0, 7); ctx.fill();
+        disegnaNucleo(nucleoR / R, R, c, c, dimSfera);
+      }
+    }
+  }
+
+  function disegnaSoloNucleo() {
+    const c = W / 2, R = W * 0.36;
+    const dimSfera = R * fattoreSfera * (el.A <= 4 ? 0.8 : 1);
+    disegnaNucleo(1, R, c, c, dimSfera);
+  }
+
+  function disegnaOrbitale() {
+    const c = W / 2, R = W * 0.42;
+    const pts = nubi.map((p) => { const q = proietta(p.x, p.y, p.z); return [q[0], q[1], q[2], p.s]; });
+    pts.sort((a, b) => a[2] - b[2]);
+    const r = Math.max(1, 1.1 * dpr);
+    ctx.globalCompositeOperation = 'lighter';
+    for (const [x, y, z, s] of pts) {
+      ctx.globalAlpha = 0.16 + 0.34 * (z + 1) / 2;
+      ctx.fillStyle = s > 0 ? C.e : C.neg;
+      ctx.beginPath(); ctx.arc(c + x * R, c + y * R, r, 0, 7); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    // nucleo e assi
+    ctx.strokeStyle = 'rgba(190,210,225,.35)'; ctx.lineWidth = 1 * dpr;
+    for (const [ax, ay, az, nome] of [[1, 0, 0, 'x'], [0, 0, 1, 'y'], [0, -1, 0, 'z']]) {
+      const a = proietta(-ax * 1.05, -ay * 1.05, -az * 1.05), b = proietta(ax * 1.05, ay * 1.05, az * 1.05);
+      ctx.beginPath(); ctx.moveTo(c + a[0] * R, c + a[1] * R); ctx.lineTo(c + b[0] * R, c + b[1] * R); ctx.stroke();
+      ctx.fillStyle = 'rgba(190,210,225,.7)'; ctx.font = (11 * dpr) + 'px "Fira Sans",sans-serif';
+      ctx.fillText(nome, c + b[0] * R + 4 * dpr, c + b[1] * R + 4 * dpr);
+    }
+    ctx.fillStyle = C.p; ctx.beginPath(); ctx.arc(c, c, 2.4 * dpr, 0, 7); ctx.fill();
+  }
+
+  function frame(now) {
+    const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+    if (!trascina.attivo && auto && modo !== 'orbitali') yaw += dt * 0.25;
+    tempo += dt;
+    dimensiona();
+    sfondo();
+    if (el) {
+      if (modo === 'atomo') disegnaAtomo();
+      else if (modo === 'nucleo') disegnaSoloNucleo();
+      else disegnaOrbitale();
+    }
+    ctx.restore();
+    // gli orbitali sono fermi: si ridisegna solo mentre li si trascina
+    const serve = trascina.attivo || (modo !== 'orbitali' && !MENO_MOTO);
+    if (animando && serve && visibile && !document.hidden) requestAnimationFrame(frame); else animando = false;
+  }
+  function avvia() { if (!animando) { animando = true; t0 = performance.now(); requestAnimationFrame(frame); } }
+
+  // per gli orbitali: asse x verso destra, z in alto, y che si allontana; rotazione automatica ferma
+  // gli orbitali che stanno nel piano xy si guardano dall'alto, quelli lungo y un po' di lato
+  let ultimo = [0, 0];
+  function orienta() {
+    const [l, m] = ultimo;
+    const piano = (l === 2 && (m === 0 || m === 3)) || (l === 3 && (m === 5 || m === 6));
+    const lungoY = (l === 1 && m === 1) || (l === 2 && m === 1) || (l === 3 && m === 2);
+    yaw = lungoY ? -1.05 : -0.42; pitch = piano ? -1.05 : -0.3;
+  }
+  const trascina = { attivo: false, x: 0, y: 0 };
+  cv.addEventListener('pointerdown', (ev) => { trascina.attivo = true; trascina.x = ev.clientX; trascina.y = ev.clientY; try { cv.setPointerCapture(ev.pointerId); } catch (_) {} cv.style.cursor = 'grabbing'; avvia(); });
+  cv.addEventListener('pointermove', (ev) => {
+    if (!trascina.attivo) return;
+    yaw += (ev.clientX - trascina.x) * 0.01; pitch += (ev.clientY - trascina.y) * 0.01;
+    pitch = Math.max(-1.5, Math.min(1.5, pitch));
+    trascina.x = ev.clientX; trascina.y = ev.clientY;
+    avvia();
+  });
+  const fine = () => { trascina.attivo = false; cv.style.cursor = 'grab'; };
+  cv.addEventListener('pointerup', fine); cv.addEventListener('pointercancel', fine);
+  new IntersectionObserver((v) => { visibile = v[0].isIntersecting; if (visibile && el) avvia(); }).observe(cv);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && el) avvia(); });
+  addEventListener('resize', () => { if (el) avvia(); });
+
+  return {
+    carica(e) { el = e; preparaNucleo(e); avvia(); },
+    vista(v) { modo = v; if (v === 'orbitali') orienta(); avvia(); },
+    orbitale(n, l, m) { ultimo = [l, m]; preparaOrbitale(n, l, m); if (modo === 'orbitali') { orienta(); avvia(); } },
+    ferma() { el = null; animando = false; },
+  };
+})();
+
+/* ---------- installazione e uso offline ---------- */
+let richiestaInstall = null;
+addEventListener('beforeinstallprompt', (ev) => { ev.preventDefault(); richiestaInstall = ev; $('installa').hidden = false; });
+$('installa').onclick = async () => { if (!richiestaInstall) return; richiestaInstall.prompt(); await richiestaInstall.userChoice; richiestaInstall = null; $('installa').hidden = true; };
+if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone) $('installa-ios').hidden = false;
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+costruisciTavola();
+costruisciLegenda();
+instrada();
+
+</script>
+</body>
+</html>
