@@ -5,150 +5,170 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atlante della materia</title>
 <meta name="description" content="I 118 elementi chimici: com'è fatto ogni atomo, come è stato scoperto, a cosa serve. Funziona anche senza connessione.">
-<meta name="theme-color" content="#ECEFE9">
+<meta name="theme-color" content="#0C1626">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Atlante">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone/icona-192.png">
 <link rel="apple-touch-icon" href="icone/icona-180.png">
 <style>
-@font-face{font-family:"Bitter";src:url("caratteri/bitter.woff") format("woff");font-weight:300 900;font-style:normal;font-display:swap}
-@font-face{font-family:"Bitter";src:url("caratteri/bitter-corsivo.woff") format("woff");font-weight:300 900;font-style:italic;font-display:swap}
-@font-face{font-family:"Fira Sans";src:url("caratteri/fira-regular.woff") format("woff");font-weight:400;font-display:swap}
-@font-face{font-family:"Fira Sans";src:url("caratteri/fira-semibold.woff") format("woff");font-weight:600;font-display:swap}
+@font-face{font-family:"DM Sans";src:url("caratteri/dm-sans.woff") format("woff");font-weight:100 1000;font-style:normal;font-display:swap}
 :root{
-  --carta:#ECEFE9; --carta-2:#E1E6DF; --inchiostro:#1F2B31; --tenue:#5B676C; --filo:#C3CBC4;
-  --lente:#0E2433; --lente-bordo:#081A26;
-  --protone:#E0553D; --neutrone:#A7B6C2; --elettrone:#F4C542; --fase-neg:#6FB7D9;
-  --gas-nobile:#A9CFE0; --non-metallo:#BBD7A4; --alogeno:#8FC3A8; --semimetallo:#E2E39B;
-  --alcalino:#F0D483; --alcalino-terroso:#EBAE78; --transizione:#D4A27F; --post-transizione:#C9B4A0;
-  --lantanide:#D9C7E3; --attinide:#C3B2D9;
-  --testo:"Bitter",Georgia,"Noto Serif",serif; --dati:"Fira Sans","Roboto",system-ui,sans-serif;
+  --notte:#0C1626; --notte-2:#0F1C30; --vetro:rgba(214,226,255,.055); --vetro-2:rgba(214,226,255,.1);
+  --filo:rgba(190,208,240,.12); --testo:#E9EEF6; --tenue:#8E9DB4; --fioco:#66758D;
+  --protone:#FF6B57; --neutrone:#B9C5D6; --elettrone:#FFD166; --fase-neg:#6FB7FF;
+  --alcalino:#FF7B72; --alcalino-terroso:#FFA657; --transizione:#E8C468; --post-transizione:#9BD68F;
+  --semimetallo:#4FD8B4; --non-metallo:#5BB5FF; --alogeno:#8A9BFF; --gas-nobile:#B494FF;
+  --lantanide:#F58FC4; --attinide:#E19BF0;
+  --font:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --c:var(--transizione);
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--carta);color:var(--inchiostro);font:400 16.5px/1.6 var(--testo);
-  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
-button{font:inherit;color:inherit}
-:focus-visible{outline:2.5px solid var(--inchiostro);outline-offset:2px}
-.pagina{max-width:760px;margin:0 auto;padding:0 16px 40px}
+html{-webkit-text-size-adjust:100%;background:var(--notte)}
+body{margin:0;min-height:100vh;color:var(--testo);font:400 16.5px/1.62 var(--font);font-optical-sizing:auto;
+  background:radial-gradient(120% 70% at 50% -10%,#16294A 0%,var(--notte) 60%) no-repeat,var(--notte);
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  -webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+::selection{background:rgba(91,181,255,.35)}
+:focus-visible{outline:2px solid #BFD4FF;outline-offset:2px;border-radius:6px}
+.pagina{max-width:720px;margin:0 auto;padding:0 20px 48px}
 [hidden]{display:none!important}
+sup{font-size:.62em;line-height:0;vertical-align:.62em;margin-left:.04em}
 
-/* ---------- tavola ---------- */
-.intestazione{padding:28px 0 14px}
-.intestazione h1{font-weight:750;font-size:clamp(30px,8.4vw,46px);line-height:1.05;letter-spacing:-.015em;margin:0}
-.intestazione p{margin:10px 0 0;max-width:34em;color:var(--tenue)}
-.cerca{display:block;margin:14px 0 6px}
-.cerca input{width:100%;font:400 16.5px var(--dati);padding:11px 14px;border:1.5px solid var(--filo);border-radius:10px;
-  background:#F6F8F4;color:var(--inchiostro)}
-.cerca input:focus{outline:none;border-color:var(--inchiostro)}
+/* ---------- copertina e tavola ---------- */
+.intestazione{padding:44px 0 6px}
+.intestazione h1{font-weight:300;font-size:clamp(38px,11vw,64px);line-height:1.02;letter-spacing:-.022em;margin:0}
+.intestazione p{margin:16px 0 0;max-width:30em;color:var(--tenue);font-size:17px;line-height:1.5}
+.cerca{position:relative;display:block;margin:28px 0 6px}
+.cerca svg{position:absolute;left:15px;top:50%;width:18px;height:18px;transform:translateY(-50%);color:var(--tenue);pointer-events:none}
+.cerca input{width:100%;font-size:16.5px;padding:13px 16px 13px 44px;border:1px solid var(--filo);border-radius:14px;
+  background:var(--vetro);transition:border-color .2s,background .2s;-webkit-appearance:none;appearance:none}
+.cerca input::placeholder{color:var(--fioco)}
+.cerca input:focus{outline:none;border-color:rgba(190,208,240,.35);background:var(--vetro-2)}
 .risultati{list-style:none;margin:0;padding:0}
-.risultati button{display:flex;align-items:baseline;gap:12px;width:100%;padding:9px 6px;border:0;border-bottom:1px solid var(--filo);
+.risultati button{display:flex;align-items:baseline;gap:14px;width:100%;padding:11px 8px;border:0;border-bottom:1px solid var(--filo);
   background:none;text-align:left;cursor:pointer}
-.risultati .rz{font:400 13px var(--dati);color:var(--tenue);min-width:2.2em;text-align:right}
-.risultati .rs{font-weight:750;min-width:1.8em}
-.risultati .vuoto{padding:9px 6px;color:var(--tenue)}
+.risultati .rz{font-size:13px;color:var(--fioco);min-width:2.2em;text-align:right}
+.risultati .rs{font-weight:600;min-width:1.8em;color:var(--c)}
+.risultati .vuoto{padding:11px 8px;color:var(--tenue)}
 
-.tavola-wrap{margin:16px -8px 0;touch-action:none;user-select:none;-webkit-user-select:none}
-.tavola{display:grid;grid-template-columns:12px repeat(18,minmax(0,1fr));gap:2px;padding:0 4px}
-.tavola .gr,.tavola .pe{font:400 8.5px/1 var(--dati);color:var(--tenue);display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px}
+.tavola-wrap{margin:22px -12px 0;touch-action:none;user-select:none;-webkit-user-select:none}
+.tavola{display:grid;grid-template-columns:12px repeat(18,minmax(0,1fr));gap:2.5px;padding:0 6px}
+.tavola .gr,.tavola .pe{font-size:8.5px;line-height:1;color:var(--fioco);display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
 .tavola .pe{align-items:center;padding:0}
-.cella{position:relative;aspect-ratio:5/6;border:0;border-radius:3px;padding:0;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font:750 clamp(9.5px,2.75vw,19px)/1 var(--testo);
-  color:var(--inchiostro);transition:opacity .15s}
-.cella .cz{display:none;position:absolute;top:3px;left:4px;font:400 9px/1 var(--dati)}
+.cella{position:relative;aspect-ratio:5/6;border:0;border-radius:4px;padding:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:clamp(9.5px,2.8vw,18px);font-weight:500;line-height:1;color:var(--testo);
+  background:color-mix(in oklab,var(--c) 30%,#14171D);box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--c) 46%,transparent);
+  transition:opacity .2s,background .15s,transform .15s}
+.cella:hover{background:color-mix(in oklab,var(--c) 44%,#14171D)}
+.cella .cz{display:none;position:absolute;top:4px;left:5px;font-size:9px;font-weight:400;color:color-mix(in oklab,var(--c) 70%,white)}
 .cella .cn{display:none}
-.cella.attenuata{opacity:.22}
-.cella.sotto{outline:2.5px solid var(--inchiostro);outline-offset:1px;z-index:1}
-.cella.segnaposto{cursor:default;background:repeating-linear-gradient(135deg,var(--c) 0 3px,transparent 3px 6px)!important;
-  font:400 8px var(--dati);color:var(--tenue)}
-.f-sep{grid-column:1/-1;height:6px}
+.cella.attenuata{opacity:.18}
+.cella.sotto{background:var(--c);color:var(--notte);z-index:1;transform:scale(1.18)}
+.cella.segnaposto{cursor:default;background:repeating-linear-gradient(135deg,color-mix(in oklab,var(--c) 30%,transparent) 0 2px,transparent 2px 5px);
+  box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--c) 30%,transparent);font-size:8px;font-weight:400;color:var(--tenue)}
+.f-sep{grid-column:1/-1;height:8px}
 @media (min-width:640px){
-  .tavola{gap:3px}
-  .cella{flex-direction:column;justify-content:center;gap:3px}
+  .tavola{gap:4px}
+  .cella{flex-direction:column;gap:4px;border-radius:6px}
   .cella .cz{display:block}
-  .cella .cn{display:block;font:400 8px/1 var(--dati);max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cella .cn{display:block;font-size:8.5px;font-weight:400;color:var(--tenue);max-width:92%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cella.sotto .cn{color:var(--notte)}
   .tavola .gr,.tavola .pe{font-size:10px}
 }
-@media (min-width:900px){ .pagina-tavola{max-width:1080px} }
+@media (min-width:900px){.pagina-tavola{max-width:1100px}.intestazione{padding-top:64px}}
 
-.lente-tavola{position:fixed;z-index:20;pointer-events:none;width:132px;padding:10px 12px 11px;border-radius:12px;
-  background:var(--inchiostro);color:var(--carta);box-shadow:0 10px 30px rgba(15,30,40,.35)}
-.lente-tavola .lz{font:400 12px var(--dati);opacity:.75}
-.lente-tavola .ls{font:800 40px/1 var(--testo);margin:2px 0 4px}
-.lente-tavola .ln{font-weight:650;font-size:15px;line-height:1.2}
-.lente-tavola .lc{font:400 11.5px/1.3 var(--dati);opacity:.8;margin-top:3px;display:flex;align-items:center;gap:6px}
-.lente-tavola .lc i,.legenda i,.famiglia i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.lente-tavola{position:fixed;z-index:20;pointer-events:none;width:142px;padding:12px 14px 13px;border-radius:16px;
+  background:rgba(20,34,58,.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:1px solid color-mix(in oklab,var(--c) 45%,transparent);box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.lente-tavola .lz{font-size:12px;color:var(--tenue)}
+.lente-tavola .ls{font-size:44px;font-weight:300;line-height:1;letter-spacing:-.03em;margin:2px 0 6px;color:var(--c)}
+.lente-tavola .ln{font-weight:500;font-size:16px;line-height:1.2}
+.lente-tavola .lc{font-size:12px;line-height:1.3;color:var(--tenue);margin-top:3px}
 
-.legenda{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}
-.legenda button{display:flex;align-items:center;gap:7px;border:1.5px solid var(--filo);background:transparent;border-radius:999px;
-  padding:5px 11px 5px 9px;font:400 13px var(--dati);cursor:pointer}
-.legenda button[aria-pressed="true"]{border-color:var(--inchiostro);background:var(--inchiostro);color:var(--carta)}
-.nota-tavola{font-size:14px;color:var(--tenue);margin:14px 0 0}
+.legenda{display:flex;flex-wrap:wrap;gap:4px 2px;margin:22px 0 0}
+.legenda button{display:flex;align-items:center;gap:8px;border:0;background:transparent;border-radius:999px;
+  padding:6px 12px 6px 10px;font-size:13.5px;line-height:1.3;color:var(--tenue);cursor:pointer;transition:background .15s,color .15s}
+.legenda button:hover{color:var(--testo)}
+.legenda button[aria-pressed="true"]{background:var(--vetro-2);color:var(--testo)}
+.legenda i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none;background:var(--c);box-shadow:0 0 10px var(--c)}
+.nota-tavola{font-size:14px;color:var(--fioco);margin:18px 0 0;max-width:36em}
 
 /* ---------- elemento ---------- */
-.barra{position:sticky;top:0;z-index:5;background:var(--carta);border-bottom:1px solid var(--filo);
-  display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;margin:0 -16px}
-.barra button{display:flex;align-items:center;gap:6px;border:0;background:none;padding:8px 6px;cursor:pointer;font:400 14.5px var(--dati);min-height:40px}
+.barra{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:6px max(12px,calc(50vw - 352px));margin:0 calc(50% - 50vw);background:rgba(12,22,38,.78);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--filo)}
+.barra button{display:flex;align-items:center;gap:6px;border:0;background:none;padding:8px 8px;cursor:pointer;font-size:15px;min-height:42px;color:var(--tenue);border-radius:10px}
+.barra button:hover{color:var(--testo)}
 .barra .vicini{display:flex;gap:2px}
 .barra svg{width:16px;height:16px;flex:none}
-.barra b{font-weight:600}
+.barra b{font-weight:500;color:var(--testo)}
 
-.eroe{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin:22px 0 18px}
-.tessera{width:112px;aspect-ratio:1;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between}
-.tessera .tz{font:600 15px/1 var(--dati)}
-.tessera .ts{font:800 58px/.9 var(--testo);letter-spacing:-.02em}
-.tessera .tm{font:400 12px/1 var(--dati)}
-.eroe h1{margin:0;font-weight:750;font-size:clamp(30px,8vw,44px);line-height:1.05;letter-spacing:-.015em}
-.eroe .inglese{margin:4px 0 0;font-style:italic;color:var(--tenue);font-size:15px}
-.famiglia{display:flex;align-items:center;gap:8px;margin-top:8px;font:400 14px var(--dati)}
+.eroe{margin:30px 0 0}
+.eroe .numero{font-size:14px;color:var(--tenue);letter-spacing:.02em}
+.eroe .simbolo-nome{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.eroe .simbolo{font-size:clamp(76px,22vw,112px);font-weight:200;line-height:.95;letter-spacing:-.04em;color:var(--c);
+  text-shadow:0 0 40px color-mix(in oklab,var(--c) 45%,transparent)}
+.eroe h1{margin:0;font-weight:400;font-size:clamp(30px,8.5vw,44px);line-height:1.05;letter-spacing:-.025em}
+.eroe .inglese{margin:6px 0 0;color:var(--tenue);font-size:15px}
+.famiglia{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:14.5px;color:var(--tenue)}
+.famiglia i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);flex:none}
 
-.visore{position:relative;width:min(100%,480px);margin:6px auto 0}
+.visore{position:relative;width:calc(100% + 40px);max-width:560px;margin:4px -20px 0}
+@media (min-width:600px){.visore{width:100%;margin:8px auto 0}}
 .visore canvas{display:block;width:100%;aspect-ratio:1;touch-action:none;cursor:grab}
-.schede{display:flex;justify-content:center;gap:0;margin:14px auto 0;border:1.5px solid var(--inchiostro);border-radius:999px;width:max-content;max-width:100%;overflow:hidden}
-.schede button{border:0;background:none;padding:8px 18px;font:400 14.5px var(--dati);cursor:pointer;min-height:40px}
-.schede button[aria-selected="true"]{background:var(--inchiostro);color:var(--carta)}
-.sottolivelli{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:12px 0 0}
-.sottolivelli button{border:1.5px solid var(--filo);background:none;border-radius:8px;padding:5px 10px;font:400 14px var(--dati);cursor:pointer;min-height:34px}
-.sottolivelli button[aria-pressed="true"]{border-color:var(--inchiostro);background:var(--carta-2);font-weight:600}
+.schede{position:relative;display:flex;gap:2px;margin:6px auto 0;padding:4px;border-radius:999px;width:max-content;max-width:100%;
+  background:var(--vetro);border:1px solid var(--filo)}
+.schede button{border:0;background:none;padding:8px 18px;font-size:14.5px;cursor:pointer;min-height:40px;border-radius:999px;color:var(--tenue);transition:background .2s,color .2s}
+.schede button[aria-selected="true"]{background:var(--vetro-2);color:var(--testo);box-shadow:inset 0 0 0 1px rgba(214,226,255,.12)}
+.sottolivelli{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:14px 0 0}
+.sottolivelli button{border:1px solid var(--filo);background:transparent;border-radius:10px;padding:5px 11px;font-size:14px;cursor:pointer;min-height:36px;color:var(--tenue);transition:all .15s}
+.sottolivelli button[aria-pressed="true"]{border-color:color-mix(in oklab,var(--c) 60%,transparent);background:color-mix(in oklab,var(--c) 16%,transparent);color:var(--testo)}
+.sottolivelli.m{margin-top:8px}
 .sottolivelli.m button{font-size:13px}
-.didascalia{font-size:14px;color:var(--tenue);text-align:center;max-width:32em;margin:10px auto 0}
+.didascalia{font-size:14px;line-height:1.55;color:var(--tenue);text-align:center;max-width:31em;margin:14px auto 0}
 
-.composizione{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:22px 0 0}
-.composizione div{border-top:3px solid var(--k);padding-top:8px}
-.composizione b{display:block;font:600 30px/1.05 var(--dati)}
-.composizione span{font:400 14px var(--dati);color:var(--tenue)}
-.isotopo{font-size:15px;margin:12px 0 0;color:var(--tenue)}
+.composizione{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:34px 0 0}
+.composizione div{padding:14px 14px 12px;border-radius:16px;background:var(--vetro);border:1px solid var(--filo)}
+.composizione b{display:block;font-size:34px;font-weight:300;line-height:1.05;letter-spacing:-.02em}
+.composizione span{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--tenue);margin-top:4px}
+.composizione span::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--k);box-shadow:0 0 8px var(--k);flex:none}
+.isotopo{font-size:14.5px;line-height:1.6;margin:14px 2px 0;color:var(--tenue)}
 
-section.parte{border-top:1px solid var(--filo);margin-top:30px;padding-top:6px}
-section.parte h2{font-weight:750;font-size:22px;line-height:1.25;margin:14px 0 10px}
-.gusci{display:flex;flex-wrap:wrap;gap:6px;margin:0}
-.gusci div{min-width:52px;border:1.5px solid var(--filo);border-radius:8px;padding:5px 9px;text-align:center}
-.gusci dt{font:400 12px var(--dati);color:var(--tenue)}
-.gusci dd{margin:0;font:600 19px var(--dati)}
-.config{font:400 clamp(20px,5.6vw,26px)/1.35 var(--dati);margin:14px 0 4px;letter-spacing:.01em}
-.fonte{font:400 12.5px var(--dati);color:var(--tenue)}
+section.parte{margin-top:48px}
+section.parte h2{font-weight:500;font-size:21px;line-height:1.25;letter-spacing:-.01em;margin:0 0 14px}
+.gusci{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.gusci div{min-width:54px;padding:8px 10px;text-align:center;border-radius:12px;background:var(--vetro);border:1px solid var(--filo)}
+.gusci dt{font-size:12px;color:var(--fioco)}
+.gusci dd{margin:0;font-size:20px;font-weight:400}
+.config{font-size:clamp(22px,6vw,28px);font-weight:300;line-height:1.35;letter-spacing:-.01em;margin:20px 0 6px}
+.fonte{font-size:13px;color:var(--fioco);margin:0}
 
-.proprieta{display:grid;grid-template-columns:1fr;gap:0;margin:0}
-@media (min-width:520px){.proprieta{grid-template-columns:1fr 1fr;column-gap:28px}}
-.proprieta div{border-bottom:1px solid var(--filo);padding:10px 0}
-.proprieta dt{font:400 13.5px var(--dati);color:var(--tenue)}
-.proprieta dd{margin:1px 0 0;font:600 19px/1.3 var(--dati)}
-.proprieta dd small{font-weight:400;font-size:13.5px;color:var(--tenue)}
-.proprieta p{margin:3px 0 0;font-size:13.5px;line-height:1.45;color:var(--tenue)}
-.ignoto{font-weight:400!important;color:var(--tenue)}
+.proprieta{margin:0;border-top:1px solid var(--filo)}
+.proprieta div{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:16px;padding:13px 0;border-bottom:1px solid var(--filo)}
+.proprieta dt{font-size:15px;color:var(--testo)}
+.proprieta dd{margin:0;font-size:15.5px;font-weight:500;text-align:right;white-space:nowrap}
+.proprieta dd small{display:block;font-weight:400;font-size:12.5px;color:var(--tenue)}
+.proprieta p{grid-column:1/-1;margin:3px 0 0;font-size:13.5px;line-height:1.5;color:var(--fioco);max-width:34em}
+.ignoto{font-weight:400!important;color:var(--fioco)}
+@media (max-width:380px){.proprieta dd{white-space:normal}}
 
-.scoperta{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 6px}
-.scoperta .anno{font:600 34px/1 var(--dati)}
-.scoperta .chi{font-style:italic}
-.testo p{margin:0 0 10px;max-width:38em}
-.fonti{font-size:13.5px;color:var(--tenue)}
-.fonti ul{margin:6px 0 0;padding-left:18px}
-.fonti a{color:inherit}
+.scoperta{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:0 0 12px}
+.scoperta .anno{font-size:44px;font-weight:200;line-height:1;letter-spacing:-.03em;color:var(--c)}
+.scoperta .chi{color:var(--tenue);font-size:15px}
+.testo p{margin:0;max-width:36em;font-size:17px;line-height:1.7;color:#D5DDEA}
+.fonti{font-size:13.5px;color:var(--fioco)}
+.fonti h2{font-size:17px!important;color:var(--tenue)}
+.fonti ul{margin:0;padding-left:18px}
+.fonti li{margin-bottom:4px}
+.fonti a{color:var(--tenue)}
 
-footer{border-top:1px solid var(--filo);margin-top:36px;padding-top:14px;font-size:13.5px;color:var(--tenue)}
-footer p{margin:0 0 8px}
-footer button{border:1.5px solid var(--inchiostro);background:none;border-radius:999px;padding:7px 14px;font:400 14px var(--dati);cursor:pointer}
+footer{border-top:1px solid var(--filo);margin-top:44px;padding-top:18px;font-size:13.5px;color:var(--fioco)}
+footer p{margin:0 0 10px;max-width:36em}
+footer button{border:1px solid rgba(214,226,255,.25);background:var(--vetro);border-radius:999px;padding:9px 16px;font-size:14px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -160,7 +180,8 @@ footer button{border:1.5px solid var(--inchiostro);background:none;border-radius
       <p>I 118 elementi conosciuti: com'è fatto ogni atomo, chi l'ha scoperto e a che cosa serve.</p>
     </header>
     <label class="cerca"><span hidden>Cerca un elemento</span>
-      <input id="cerca" type="search" inputmode="search" autocomplete="off" placeholder="Cerca: nome, simbolo o numero">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m13 13 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input id="cerca" type="search" inputmode="search" autocomplete="off" placeholder="Cerca per nome, simbolo o numero">
     </label>
     <ul class="risultati" id="risultati"></ul>
     <div class="tavola-wrap"><div class="tavola" id="tavola" role="grid" aria-label="Tavola periodica degli elementi"></div></div>
@@ -175,16 +196,18 @@ footer button{border:1.5px solid var(--inchiostro);background:none;border-radius
 
   <article class="pagina" id="vista-elemento" hidden>
     <nav class="barra" aria-label="Navigazione">
-      <button id="torna"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Tavola</button>
+      <button id="torna"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Tavola</button>
       <div class="vicini">
-        <button id="prec" aria-label="Elemento precedente"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span></span></button>
-        <button id="succ" aria-label="Elemento successivo"><span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+        <button id="prec" aria-label="Elemento precedente"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span></span></button>
+        <button id="succ" aria-label="Elemento successivo"><span></span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
     </nav>
-    <div class="eroe">
-      <div class="tessera" id="tessera"><span class="tz"></span><span class="ts"></span><span class="tm"></span></div>
-      <div><h1 id="nome"></h1><p class="inglese" id="inglese"></p><div class="famiglia" id="famiglia"></div></div>
-    </div>
+    <header class="eroe">
+      <div class="numero" id="numero"></div>
+      <div class="simbolo-nome"><span class="simbolo" id="simbolo"></span><h1 id="nome"></h1></div>
+      <p class="inglese" id="inglese"></p>
+      <div class="famiglia" id="famiglia"></div>
+    </header>
 
     <div class="visore"><canvas id="visore" aria-label="Modello tridimensionale dell'atomo: trascina per ruotarlo"></canvas></div>
     <div class="schede" role="tablist" aria-label="Vista del modello">
@@ -247,6 +270,8 @@ const FAMIGLIE = [
   ['Gas nobile', '--gas-nobile'], ['Lantanide', '--lantanide'], ['Attinide', '--attinide'],
 ];
 const COLORE = Object.fromEntries(FAMIGLIE.map(([n, v]) => [n, 'var(' + v + ')']));
+const VAR_COLORE = Object.fromEntries(FAMIGLIE);
+const apici = (s) => s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => '<sup>' + [...m].map((c) => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('') + '</sup>');
 const PLURALE = {'Metallo alcalino': 'Metalli alcalini', 'Metallo alcalino-terroso': 'Metalli alcalino-terrosi',
   'Metallo di transizione': 'Metalli di transizione', 'Metallo post-transizionale': 'Metalli post-transizionali',
   'Semimetallo': 'Semimetalli', 'Non metallo': 'Non metalli', 'Alogeno': 'Alogeni', 'Gas nobile': 'Gas nobili',
@@ -296,7 +321,7 @@ function costruisciTavola() {
   }
   for (const e of ELEMENTI) {
     const b = document.createElement('button');
-    b.className = 'cella'; b.dataset.z = e.z; b.style.background = COLORE[e.cat];
+    b.className = 'cella'; b.dataset.z = e.z; b.style.setProperty('--c', COLORE[e.cat]);
     b.setAttribute('aria-label', e.z + ', ' + e.n + ', ' + e.s);
     b.innerHTML = '<span class="cz">' + e.z + '</span>' + e.s + '<span class="cn">' + e.n + '</span>';
     add(b, e.row < 9 ? e.row + 1 : e.row + 1, e.col + 1);
@@ -323,8 +348,9 @@ function mostraLente(x, y, z) {
   if (cellaSotto) cellaSotto.classList.add('sotto');
   if (!z) { lente.hidden = true; return; }
   const e = ELEMENTI[z - 1];
+  lente.style.setProperty('--c', COLORE[e.cat]);
   lente.innerHTML = '<div class="lz">' + e.z + '</div><div class="ls">' + e.s + '</div><div class="ln">' + e.n +
-    '</div><div class="lc"><i style="background:' + COLORE[e.cat] + '"></i>' + e.cat + '</div>';
+    '</div><div class="lc">' + e.cat + '</div>';
   lente.hidden = false;
   const w = lente.offsetWidth, h = lente.offsetHeight;
   let lx = Math.min(Math.max(8, x - w / 2), innerWidth - w - 8);
@@ -361,7 +387,8 @@ function costruisciLegenda() {
   for (const [nome] of FAMIGLIE) {
     const b = document.createElement('button');
     b.setAttribute('aria-pressed', 'false');
-    b.innerHTML = '<i style="background:' + COLORE[nome] + '"></i>' + PLURALE[nome];
+    b.style.setProperty('--c', COLORE[nome]);
+    b.innerHTML = '<i></i>' + PLURALE[nome];
     b.onclick = () => {
       famigliaAttiva = famigliaAttiva === nome ? null : nome;
       for (const x of l.children) x.setAttribute('aria-pressed', String(x === b && famigliaAttiva !== null));
@@ -391,6 +418,7 @@ $('cerca').addEventListener('input', (ev) => {
   if (!trovati.length) { ris.innerHTML = '<li class="vuoto">Nessun elemento corrisponde a «' + ev.target.value.replace(/[<&]/g, '') + '».</li>'; return; }
   for (const e of trovati.slice(0, 6)) {
     const li = document.createElement('li');
+    li.style.setProperty('--c', COLORE[e.cat]);
     li.innerHTML = '<button><span class="rz">' + e.z + '</span><span class="rs">' + e.s + '</span><span>' + e.n + '</span></button>';
     li.firstChild.onclick = () => apri(e.z);
     ris.appendChild(li);
@@ -429,14 +457,12 @@ function mostraElemento(e) {
   if (prec) { $('prec').querySelector('span').innerHTML = '<b>' + prec.s + '</b>'; $('prec').setAttribute('aria-label', 'Elemento precedente: ' + prec.n); $('prec').onclick = () => apri(prec.z); }
   if (succ) { $('succ').querySelector('span').innerHTML = '<b>' + succ.s + '</b>'; $('succ').setAttribute('aria-label', 'Elemento successivo: ' + succ.n); $('succ').onclick = () => apri(succ.z); }
 
-  const t = $('tessera');
-  t.style.background = COLORE[e.cat];
-  t.querySelector('.tz').textContent = e.z;
-  t.querySelector('.ts').textContent = e.s;
-  t.querySelector('.tm').textContent = e.stab ? numero(parseFloat(e.m), Math.min(3, (e.m.split('.')[1] || '').length)) : '[' + e.A + ']';
+  $('vista-elemento').style.setProperty('--c', COLORE[e.cat]);
+  $('numero').textContent = 'Numero atomico ' + e.z;
+  $('simbolo').textContent = e.s;
   $('nome').textContent = e.n;
   $('inglese').textContent = 'In inglese: ' + e.en;
-  $('famiglia').innerHTML = '<i style="background:' + COLORE[e.cat] + '"></i>' + e.cat +
+  $('famiglia').innerHTML = '<i></i>' + e.cat +
     (e.g ? ', gruppo ' + e.g : (e.cat === 'Lantanide' ? ', serie dei lantanidi' : ', serie degli attinidi')) + ', periodo ' + e.p;
 
   $('composizione').innerHTML =
@@ -456,7 +482,7 @@ function mostraElemento(e) {
   $('isotopo').textContent = iso;
 
   $('gusci').innerHTML = e.gusci.map((n, i) => '<div><dt>' + LETTERE_GUSCI[i] + '</dt><dd>' + n + '</dd></div>').join('');
-  $('config').textContent = e.conf;
+  $('config').innerHTML = apici(e.conf);
   $('config-fonte').textContent = 'Configurazione elettronica dello stato fondamentale. Elettroni per guscio, dal più interno (K) al più esterno. ' +
     (e.cf === 'NIST' ? 'Fonte: NIST.' : 'Valore calcolato, non ancora misurato (fonte: PubChem).');
 
@@ -599,7 +625,7 @@ const visore = (() => {
     const r = (n >> 16) * f, gg = ((n >> 8) & 255) * f, b = (n & 255) * f;
     return 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')';
   }
-  const C = { p: '#E0553D', n: '#A7B6C2', e: '#F4C542', neg: '#6FB7D9' };
+  const C = { p: '#FF6B57', n: '#B9C5D6', e: '#FFD166', neg: '#6FB7FF' };
 
   // generatore pseudo-casuale riproducibile
   function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -710,22 +736,18 @@ const visore = (() => {
     return [x1 * f, y2 * f, z2, f];
   }
 
+  let alone = '#E8C468';
   function sfondo() {
-    const c = W / 2, R = W * 0.485;
+    const c = W / 2;
     ctx.clearRect(0, 0, W, W);
-    const g = ctx.createRadialGradient(c, c * 0.92, R * 0.1, c, c, R);
-    g.addColorStop(0, '#16344A'); g.addColorStop(1, '#0B1D2A');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R, 0, 7); ctx.fill();
-    // ghiera graduata
-    ctx.strokeStyle = 'rgba(31,43,49,.85)'; ctx.lineWidth = 1.2 * dpr;
-    ctx.beginPath(); ctx.arc(c, c, R + 1.5 * dpr, 0, 7); ctx.stroke();
-    ctx.strokeStyle = 'rgba(31,43,49,.55)'; ctx.lineWidth = 1 * dpr;
-    for (let i = 0; i < 72; i++) {
-      const a = i / 72 * Math.PI * 2, l = (i % 6 === 0 ? 7 : 3.5) * dpr;
-      ctx.beginPath(); ctx.moveTo(c + Math.cos(a) * (R + 4 * dpr), c + Math.sin(a) * (R + 4 * dpr));
-      ctx.lineTo(c + Math.cos(a) * (R + 4 * dpr + l), c + Math.sin(a) * (R + 4 * dpr + l)); ctx.stroke();
-    }
-    ctx.save(); ctx.beginPath(); ctx.arc(c, c, R, 0, 7); ctx.clip();
+    const g = ctx.createRadialGradient(c, c, 0, c, c, W * 0.5);
+    g.addColorStop(0, hexA(alone, modo === 'nucleo' ? 0.16 : 0.12)); g.addColorStop(0.55, hexA(alone, 0.04)); g.addColorStop(1, hexA(alone, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+    ctx.save();
+  }
+  function hexA(hex, a) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
   }
 
   function disegnaNucleo(scala, R, cx, cy, dimSfera) {
@@ -768,7 +790,7 @@ const visore = (() => {
     for (const it of voci) {
       if (it.tipo === 'l') {
         const prof = (it.z + 1) / 2;
-        ctx.strokeStyle = 'rgba(190,210,225,' + (0.14 + 0.32 * prof).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(200,216,245,' + (0.1 + 0.3 * prof).toFixed(3) + ')';
         ctx.lineWidth = 1.1 * dpr;
         ctx.beginPath(); ctx.moveTo(c + it.a[0] * R, c + it.a[1] * R); ctx.lineTo(c + it.b[0] * R, c + it.b[1] * R); ctx.stroke();
       } else if (it.tipo === 'e') {
@@ -778,7 +800,7 @@ const visore = (() => {
         ctx.globalAlpha = 1;
       } else {
         const g = ctx.createRadialGradient(c, c, 0, c, c, nucleoR * 2.6);
-        g.addColorStop(0, 'rgba(224,85,61,.28)'); g.addColorStop(1, 'rgba(224,85,61,0)');
+        g.addColorStop(0, 'rgba(255,107,87,.3)'); g.addColorStop(1, 'rgba(255,107,87,0)');
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, nucleoR * 2.6, 0, 7); ctx.fill();
         disegnaNucleo(nucleoR / R, R, c, c, dimSfera);
       }
@@ -809,7 +831,7 @@ const visore = (() => {
     for (const [ax, ay, az, nome] of [[1, 0, 0, 'x'], [0, 0, 1, 'y'], [0, -1, 0, 'z']]) {
       const a = proietta(-ax * 1.05, -ay * 1.05, -az * 1.05), b = proietta(ax * 1.05, ay * 1.05, az * 1.05);
       ctx.beginPath(); ctx.moveTo(c + a[0] * R, c + a[1] * R); ctx.lineTo(c + b[0] * R, c + b[1] * R); ctx.stroke();
-      ctx.fillStyle = 'rgba(190,210,225,.7)'; ctx.font = (11 * dpr) + 'px "Fira Sans",sans-serif';
+      ctx.fillStyle = 'rgba(190,210,225,.7)'; ctx.font = (11 * dpr) + 'px "DM Sans",sans-serif';
       ctx.fillText(nome, c + b[0] * R + 4 * dpr, c + b[1] * R + 4 * dpr);
     }
     ctx.fillStyle = C.p; ctx.beginPath(); ctx.arc(c, c, 2.4 * dpr, 0, 7); ctx.fill();
@@ -858,7 +880,11 @@ const visore = (() => {
   addEventListener('resize', () => { if (el) avvia(); });
 
   return {
-    carica(e) { el = e; preparaNucleo(e); avvia(); },
+    carica(e) {
+      el = e;
+      alone = getComputedStyle(document.documentElement).getPropertyValue(VAR_COLORE[e.cat]).trim() || alone;
+      preparaNucleo(e); avvia();
+    },
     vista(v) { modo = v; if (v === 'orbitali') orienta(); avvia(); },
     orbitale(n, l, m) { ultimo = [l, m]; preparaOrbitale(n, l, m); if (modo === 'orbitali') { orienta(); avvia(); } },
     ferma() { el = null; animando = false; },

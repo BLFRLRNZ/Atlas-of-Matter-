@@ -2,14 +2,13 @@
 const { chromium } = require('playwright');
 const path = require('path');
 const svg = (s) => `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 100 100">
-<defs><radialGradient id="l" cx="50%" cy="46%" r="55%"><stop offset="0" stop-color="#16344A"/><stop offset="1" stop-color="#0B1D2A"/></radialGradient>
-<radialGradient id="p" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".2" stop-color="#E0553D"/><stop offset="1" stop-color="#7a2a1c"/></radialGradient>
-<radialGradient id="n" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".2" stop-color="#A7B6C2"/><stop offset="1" stop-color="#4f5c66"/></radialGradient>
-<radialGradient id="e" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#F4C542"/><stop offset="1" stop-color="#8a6a12"/></radialGradient></defs>
-<rect width="100" height="100" fill="#ECEFE9"/>
-<circle cx="50" cy="50" r="37" fill="url(#l)"/>
-<circle cx="50" cy="50" r="38.6" fill="none" stroke="#1F2B31" stroke-width="1.1"/>
-<g fill="none" stroke="#BED2E1" stroke-opacity=".55" stroke-width="1.1">
+<defs><radialGradient id="l" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#1B3358"/><stop offset=".65" stop-color="#0C1626"/></radialGradient><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FF6B57" stop-opacity=".35"/><stop offset="1" stop-color="#FF6B57" stop-opacity="0"/></radialGradient>
+<radialGradient id="p" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".2" stop-color="#FF6B57"/><stop offset="1" stop-color="#7a2a1c"/></radialGradient>
+<radialGradient id="n" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".2" stop-color="#B9C5D6"/><stop offset="1" stop-color="#4f5c66"/></radialGradient>
+<radialGradient id="e" cx="35%" cy="32%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="#FFD166"/><stop offset="1" stop-color="#8a6a12"/></radialGradient></defs>
+<rect width="100" height="100" fill="url(#l)"/>
+<circle cx="50" cy="50" r="14" fill="url(#g)"/>
+<g fill="none" stroke="#C8D8F5" stroke-opacity=".5" stroke-width="1">
 <ellipse cx="50" cy="50" rx="29" ry="10.5" transform="rotate(-28 50 50)"/>
 <ellipse cx="50" cy="50" rx="29" ry="10.5" transform="rotate(32 50 50)"/>
 <ellipse cx="50" cy="50" rx="10.5" ry="29" transform="rotate(2 50 50)"/></g>

@@ -39,7 +39,7 @@ Gli orbitali sono disegnati con il modello dell'atomo di idrogeno: la forma è c
 - `strumenti/costruisci.py`: genera `index.html` (con `--caratteri` rigenera anche i caratteri ridotti).
 - `strumenti/icone.js`: disegna le icone.
 - `sw.js` e `manifest.webmanifest`: installazione e funzionamento offline.
-- `caratteri/`: Bitter e Fira Sans (SIL Open Font License, licenze incluse).
+- `caratteri/`: DM Sans (SIL Open Font License, licenza inclusa).
 
 Per ricostruire: `python3 strumenti/costruisci.py`
 

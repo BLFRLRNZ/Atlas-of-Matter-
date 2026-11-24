@@ -8,6 +8,8 @@ const FAMIGLIE = [
   ['Gas nobile', '--gas-nobile'], ['Lantanide', '--lantanide'], ['Attinide', '--attinide'],
 ];
 const COLORE = Object.fromEntries(FAMIGLIE.map(([n, v]) => [n, 'var(' + v + ')']));
+const VAR_COLORE = Object.fromEntries(FAMIGLIE);
+const apici = (s) => s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => '<sup>' + [...m].map((c) => '⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(c)).join('') + '</sup>');
 const PLURALE = {'Metallo alcalino': 'Metalli alcalini', 'Metallo alcalino-terroso': 'Metalli alcalino-terrosi',
   'Metallo di transizione': 'Metalli di transizione', 'Metallo post-transizionale': 'Metalli post-transizionali',
   'Semimetallo': 'Semimetalli', 'Non metallo': 'Non metalli', 'Alogeno': 'Alogeni', 'Gas nobile': 'Gas nobili',
@@ -57,7 +59,7 @@ function costruisciTavola() {
   }
   for (const e of ELEMENTI) {
     const b = document.createElement('button');
-    b.className = 'cella'; b.dataset.z = e.z; b.style.background = COLORE[e.cat];
+    b.className = 'cella'; b.dataset.z = e.z; b.style.setProperty('--c', COLORE[e.cat]);
     b.setAttribute('aria-label', e.z + ', ' + e.n + ', ' + e.s);
     b.innerHTML = '<span class="cz">' + e.z + '</span>' + e.s + '<span class="cn">' + e.n + '</span>';
     add(b, e.row < 9 ? e.row + 1 : e.row + 1, e.col + 1);
@@ -84,8 +86,9 @@ function mostraLente(x, y, z) {
   if (cellaSotto) cellaSotto.classList.add('sotto');
   if (!z) { lente.hidden = true; return; }
   const e = ELEMENTI[z - 1];
+  lente.style.setProperty('--c', COLORE[e.cat]);
   lente.innerHTML = '<div class="lz">' + e.z + '</div><div class="ls">' + e.s + '</div><div class="ln">' + e.n +
-    '</div><div class="lc"><i style="background:' + COLORE[e.cat] + '"></i>' + e.cat + '</div>';
+    '</div><div class="lc">' + e.cat + '</div>';
   lente.hidden = false;
   const w = lente.offsetWidth, h = lente.offsetHeight;
   let lx = Math.min(Math.max(8, x - w / 2), innerWidth - w - 8);
@@ -122,7 +125,8 @@ function costruisciLegenda() {
   for (const [nome] of FAMIGLIE) {
     const b = document.createElement('button');
     b.setAttribute('aria-pressed', 'false');
-    b.innerHTML = '<i style="background:' + COLORE[nome] + '"></i>' + PLURALE[nome];
+    b.style.setProperty('--c', COLORE[nome]);
+    b.innerHTML = '<i></i>' + PLURALE[nome];
     b.onclick = () => {
       famigliaAttiva = famigliaAttiva === nome ? null : nome;
       for (const x of l.children) x.setAttribute('aria-pressed', String(x === b && famigliaAttiva !== null));
@@ -152,6 +156,7 @@ $('cerca').addEventListener('input', (ev) => {
   if (!trovati.length) { ris.innerHTML = '<li class="vuoto">Nessun elemento corrisponde a «' + ev.target.value.replace(/[<&]/g, '') + '».</li>'; return; }
   for (const e of trovati.slice(0, 6)) {
     const li = document.createElement('li');
+    li.style.setProperty('--c', COLORE[e.cat]);
     li.innerHTML = '<button><span class="rz">' + e.z + '</span><span class="rs">' + e.s + '</span><span>' + e.n + '</span></button>';
     li.firstChild.onclick = () => apri(e.z);
     ris.appendChild(li);
@@ -190,14 +195,12 @@ function mostraElemento(e) {
   if (prec) { $('prec').querySelector('span').innerHTML = '<b>' + prec.s + '</b>'; $('prec').setAttribute('aria-label', 'Elemento precedente: ' + prec.n); $('prec').onclick = () => apri(prec.z); }
   if (succ) { $('succ').querySelector('span').innerHTML = '<b>' + succ.s + '</b>'; $('succ').setAttribute('aria-label', 'Elemento successivo: ' + succ.n); $('succ').onclick = () => apri(succ.z); }
 
-  const t = $('tessera');
-  t.style.background = COLORE[e.cat];
-  t.querySelector('.tz').textContent = e.z;
-  t.querySelector('.ts').textContent = e.s;
-  t.querySelector('.tm').textContent = e.stab ? numero(parseFloat(e.m), Math.min(3, (e.m.split('.')[1] || '').length)) : '[' + e.A + ']';
+  $('vista-elemento').style.setProperty('--c', COLORE[e.cat]);
+  $('numero').textContent = 'Numero atomico ' + e.z;
+  $('simbolo').textContent = e.s;
   $('nome').textContent = e.n;
   $('inglese').textContent = 'In inglese: ' + e.en;
-  $('famiglia').innerHTML = '<i style="background:' + COLORE[e.cat] + '"></i>' + e.cat +
+  $('famiglia').innerHTML = '<i></i>' + e.cat +
     (e.g ? ', gruppo ' + e.g : (e.cat === 'Lantanide' ? ', serie dei lantanidi' : ', serie degli attinidi')) + ', periodo ' + e.p;
 
   $('composizione').innerHTML =
@@ -217,7 +220,7 @@ function mostraElemento(e) {
   $('isotopo').textContent = iso;
 
   $('gusci').innerHTML = e.gusci.map((n, i) => '<div><dt>' + LETTERE_GUSCI[i] + '</dt><dd>' + n + '</dd></div>').join('');
-  $('config').textContent = e.conf;
+  $('config').innerHTML = apici(e.conf);
   $('config-fonte').textContent = 'Configurazione elettronica dello stato fondamentale. Elettroni per guscio, dal più interno (K) al più esterno. ' +
     (e.cf === 'NIST' ? 'Fonte: NIST.' : 'Valore calcolato, non ancora misurato (fonte: PubChem).');
 
@@ -360,7 +363,7 @@ const visore = (() => {
     const r = (n >> 16) * f, gg = ((n >> 8) & 255) * f, b = (n & 255) * f;
     return 'rgb(' + (r | 0) + ',' + (gg | 0) + ',' + (b | 0) + ')';
   }
-  const C = { p: '#E0553D', n: '#A7B6C2', e: '#F4C542', neg: '#6FB7D9' };
+  const C = { p: '#FF6B57', n: '#B9C5D6', e: '#FFD166', neg: '#6FB7FF' };
 
   // generatore pseudo-casuale riproducibile
   function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -471,22 +474,18 @@ const visore = (() => {
     return [x1 * f, y2 * f, z2, f];
   }
 
+  let alone = '#E8C468';
   function sfondo() {
-    const c = W / 2, R = W * 0.485;
+    const c = W / 2;
     ctx.clearRect(0, 0, W, W);
-    const g = ctx.createRadialGradient(c, c * 0.92, R * 0.1, c, c, R);
-    g.addColorStop(0, '#16344A'); g.addColorStop(1, '#0B1D2A');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, R, 0, 7); ctx.fill();
-    // ghiera graduata
-    ctx.strokeStyle = 'rgba(31,43,49,.85)'; ctx.lineWidth = 1.2 * dpr;
-    ctx.beginPath(); ctx.arc(c, c, R + 1.5 * dpr, 0, 7); ctx.stroke();
-    ctx.strokeStyle = 'rgba(31,43,49,.55)'; ctx.lineWidth = 1 * dpr;
-    for (let i = 0; i < 72; i++) {
-      const a = i / 72 * Math.PI * 2, l = (i % 6 === 0 ? 7 : 3.5) * dpr;
-      ctx.beginPath(); ctx.moveTo(c + Math.cos(a) * (R + 4 * dpr), c + Math.sin(a) * (R + 4 * dpr));
-      ctx.lineTo(c + Math.cos(a) * (R + 4 * dpr + l), c + Math.sin(a) * (R + 4 * dpr + l)); ctx.stroke();
-    }
-    ctx.save(); ctx.beginPath(); ctx.arc(c, c, R, 0, 7); ctx.clip();
+    const g = ctx.createRadialGradient(c, c, 0, c, c, W * 0.5);
+    g.addColorStop(0, hexA(alone, modo === 'nucleo' ? 0.16 : 0.12)); g.addColorStop(0.55, hexA(alone, 0.04)); g.addColorStop(1, hexA(alone, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+    ctx.save();
+  }
+  function hexA(hex, a) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
   }
 
   function disegnaNucleo(scala, R, cx, cy, dimSfera) {
@@ -529,7 +528,7 @@ const visore = (() => {
     for (const it of voci) {
       if (it.tipo === 'l') {
         const prof = (it.z + 1) / 2;
-        ctx.strokeStyle = 'rgba(190,210,225,' + (0.14 + 0.32 * prof).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(200,216,245,' + (0.1 + 0.3 * prof).toFixed(3) + ')';
         ctx.lineWidth = 1.1 * dpr;
         ctx.beginPath(); ctx.moveTo(c + it.a[0] * R, c + it.a[1] * R); ctx.lineTo(c + it.b[0] * R, c + it.b[1] * R); ctx.stroke();
       } else if (it.tipo === 'e') {
@@ -539,7 +538,7 @@ const visore = (() => {
         ctx.globalAlpha = 1;
       } else {
         const g = ctx.createRadialGradient(c, c, 0, c, c, nucleoR * 2.6);
-        g.addColorStop(0, 'rgba(224,85,61,.28)'); g.addColorStop(1, 'rgba(224,85,61,0)');
+        g.addColorStop(0, 'rgba(255,107,87,.3)'); g.addColorStop(1, 'rgba(255,107,87,0)');
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, nucleoR * 2.6, 0, 7); ctx.fill();
         disegnaNucleo(nucleoR / R, R, c, c, dimSfera);
       }
@@ -570,7 +569,7 @@ const visore = (() => {
     for (const [ax, ay, az, nome] of [[1, 0, 0, 'x'], [0, 0, 1, 'y'], [0, -1, 0, 'z']]) {
       const a = proietta(-ax * 1.05, -ay * 1.05, -az * 1.05), b = proietta(ax * 1.05, ay * 1.05, az * 1.05);
       ctx.beginPath(); ctx.moveTo(c + a[0] * R, c + a[1] * R); ctx.lineTo(c + b[0] * R, c + b[1] * R); ctx.stroke();
-      ctx.fillStyle = 'rgba(190,210,225,.7)'; ctx.font = (11 * dpr) + 'px "Fira Sans",sans-serif';
+      ctx.fillStyle = 'rgba(190,210,225,.7)'; ctx.font = (11 * dpr) + 'px "DM Sans",sans-serif';
       ctx.fillText(nome, c + b[0] * R + 4 * dpr, c + b[1] * R + 4 * dpr);
     }
     ctx.fillStyle = C.p; ctx.beginPath(); ctx.arc(c, c, 2.4 * dpr, 0, 7); ctx.fill();
@@ -619,7 +618,11 @@ const visore = (() => {
   addEventListener('resize', () => { if (el) avvia(); });
 
   return {
-    carica(e) { el = e; preparaNucleo(e); avvia(); },
+    carica(e) {
+      el = e;
+      alone = getComputedStyle(document.documentElement).getPropertyValue(VAR_COLORE[e.cat]).trim() || alone;
+      preparaNucleo(e); avvia();
+    },
     vista(v) { modo = v; if (v === 'orbitali') orienta(); avvia(); },
     orbitale(n, l, m) { ultimo = [l, m]; preparaOrbitale(n, l, m); if (modo === 'orbitali') { orienta(); avvia(); } },
     ferma() { el = null; animando = false; },

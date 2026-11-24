@@ -1,7 +1,7 @@
 // Service worker: conserva l'app sul telefono così funziona anche senza connessione.
-const CACHE = 'atlante-v1';
+const CACHE = 'atlante-v2';
 const FILE = ['./', 'index.html', 'manifest.webmanifest',
-  'caratteri/bitter.woff', 'caratteri/bitter-corsivo.woff', 'caratteri/fira-regular.woff', 'caratteri/fira-semibold.woff',
+  'caratteri/dm-sans.woff',
   'icone/icona-180.png', 'icone/icona-192.png', 'icone/icona-512.png'];
 
 self.addEventListener('install', (ev) => {

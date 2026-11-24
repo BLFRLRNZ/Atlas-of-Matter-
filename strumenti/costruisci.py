@@ -17,7 +17,7 @@ app = open(P('sorgenti', 'app.js'), encoding='utf-8').read()
 dati = open(P('dati', 'elementi.json'), encoding='utf-8').read()
 
 if '--caratteri' in sys.argv:
-    # Caratteri liberi (SIL Open Font License): Bitter e Fira Sans, ridotti ai glifi usati.
+    # Carattere libero (SIL Open Font License): DM Sans variabile, ridotto ai glifi usati.
     from fontTools import subset
     from fontTools.ttLib import TTFont
     usati = set(pagina + app + dati) | set(chr(c) for c in range(0x20, 0x7F)) | set(chr(c) for c in range(0xA0, 0x180))
@@ -25,11 +25,10 @@ if '--caratteri' in sys.argv:
     testo = ''.join(sorted(c for c in usati if c >= ' '))
     G = '/usr/share/fonts/truetype/google-fonts/ofl/'
     os.makedirs(P('caratteri'), exist_ok=True)
-    for src, dst in [(G + 'bitter/Bitter[wght].ttf', 'bitter.woff'), (G + 'bitter/Bitter-Italic[wght].ttf', 'bitter-corsivo.woff'),
-                     (G + 'firasans/FiraSans-Regular.ttf', 'fira-regular.woff'), (G + 'firasans/FiraSans-SemiBold.ttf', 'fira-semibold.woff')]:
+    for src, dst in [(G + 'dmsans/DMSans[opsz,wght].ttf', 'dm-sans.woff')]:
         opt = subset.Options()
         opt.flavor = 'woff'
-        opt.layout_features = ['kern', 'liga', 'tnum', 'lnum', 'sups']
+        opt.layout_features = ['kern', 'liga', 'calt', 'ss01']
         opt.name_IDs = ['*']
         opt.notdef_outline = True
         f = TTFont(src)
