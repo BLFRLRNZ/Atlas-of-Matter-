@@ -1290,8 +1290,14 @@ let richiestaInstall = null;
 addEventListener('beforeinstallprompt', (ev) => { ev.preventDefault(); richiestaInstall = ev; $('installa').hidden = false; });
 $('installa').onclick = async () => { if (!richiestaInstall) return; richiestaInstall.prompt(); await richiestaInstall.userChoice; richiestaInstall = null; $('installa').hidden = true; };
 if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !navigator.standalone) $('installa-ios').hidden = false;
-if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|anthropic/.test(location.hostname)) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost') && !/claude|anthropic/.test(location.hostname)) {
+  // quando arriva una versione nuova dell'app, la pagina si ricarica una volta da sola
+  const aggiornamento = !!navigator.serviceWorker.controller;
+  let ricaricata = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (aggiornamento && !ricaricata) { ricaricata = true; location.reload(); }
+  });
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((r) => r.update()).catch(() => {});
 }
 
 costruisciTavola();
