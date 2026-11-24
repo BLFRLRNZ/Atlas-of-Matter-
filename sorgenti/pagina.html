@@ -171,6 +171,48 @@ section.parte h2{font-weight:500;font-size:21px;line-height:1.25;letter-spacing:
 footer{border-top:1px solid var(--filo);margin-top:44px;padding-top:18px;font-size:13.5px;color:var(--fioco)}
 footer p{margin:0 0 10px;max-width:36em}
 footer button{border:1px solid rgba(214,226,255,.25);background:var(--vetro);border-radius:999px;padding:9px 16px;font-size:14px;cursor:pointer}
+/* ---------- materiali ---------- */
+.schede-home{margin:26px 0 0}
+.schede-home button{padding:8px 22px}
+.categorie{display:flex;gap:6px;overflow-x:auto;margin:18px -20px 0;padding:2px 20px 6px;scrollbar-width:none}
+.categorie::-webkit-scrollbar{display:none}
+.categorie button{flex:none;border:1px solid var(--filo);background:transparent;border-radius:999px;padding:7px 13px;font-size:13.5px;color:var(--tenue);cursor:pointer;white-space:nowrap}
+.categorie button[aria-pressed="true"]{background:var(--vetro-2);color:var(--testo);border-color:rgba(214,226,255,.22)}
+.lista-materiali h2{font-weight:500;font-size:15px;color:var(--tenue);margin:30px 0 4px;letter-spacing:.01em}
+.lista-materiali ul,.lista-mat{list-style:none;margin:0;padding:0}
+.riga-mat{display:grid;grid-template-columns:minmax(96px,30%) 1fr auto;align-items:center;gap:12px;width:100%;padding:12px 2px;border:0;
+  border-bottom:1px solid var(--filo);background:none;text-align:left;cursor:pointer}
+.riga-mat:hover{background:rgba(214,226,255,.03)}
+.riga-mat .rf{font-size:17px;font-weight:300;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.riga-mat .rn{font-size:15px;line-height:1.3}
+.riga-mat .rp{display:flex;gap:3px}
+.riga-mat .rp i{width:7px;height:7px;border-radius:50%;display:block}
+.vuoto-mat{color:var(--tenue);padding:16px 2px}
+.formula-grande{font-size:clamp(44px,13vw,72px);font-weight:200;line-height:1.02;letter-spacing:-.03em;margin:4px 0 6px;
+  text-shadow:0 0 36px rgba(140,170,255,.25);overflow-wrap:anywhere}
+.eroe-mat h1{margin:0;font-weight:400;font-size:clamp(26px,7vw,38px);line-height:1.12;letter-spacing:-.02em}
+.eroe-mat .meta{margin:10px 0 0;color:var(--tenue);font-size:14.5px}
+.legenda-atomi{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin:8px 0 0;font-size:14px;color:var(--tenue)}
+.legenda-atomi span{display:flex;align-items:center;gap:6px}
+.legenda-atomi i{width:10px;height:10px;border-radius:50%}
+.strumenti-visore{display:flex;justify-content:center;gap:8px;margin:12px 0 0}
+.strumenti-visore button{border:1px solid var(--filo);background:transparent;border-radius:999px;padding:7px 14px;font-size:13.5px;color:var(--tenue);cursor:pointer;min-height:36px}
+.strumenti-visore button[aria-pressed="true"]{background:var(--vetro-2);color:var(--testo)}
+.composti{margin:0;padding:0;list-style:none;border-top:1px solid var(--filo)}
+.composti li{border-bottom:1px solid var(--filo)}
+.composti a{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px 12px;padding:13px 0;color:inherit;text-decoration:none}
+.composti .cs{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500;
+  background:color-mix(in oklab,var(--c) 22%,var(--notte-2));box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--c) 45%,transparent)}
+.composti .cn{font-size:16px}
+.composti .cn small{display:block;font-size:13px;color:var(--tenue)}
+.composti .cp{font-size:16px;font-weight:500;text-align:right}
+.composti .barra-perc{grid-column:2/4;height:4px;border-radius:2px;background:var(--vetro-2);overflow:hidden}
+.composti .barra-perc b{display:block;height:100%;border-radius:2px;background:var(--k)}
+.nei-materiali summary{cursor:pointer;list-style:none;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;
+  border:1px solid var(--filo);background:var(--vetro);font-size:14.5px;color:var(--testo)}
+.nei-materiali summary::-webkit-details-marker{display:none}
+.nei-materiali[open] summary{margin-bottom:8px}
+.nei-materiali p{color:var(--tenue);margin:0 0 12px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -181,14 +223,24 @@ footer button{border:1px solid rgba(214,226,255,.25);background:var(--vetro);bor
       <h1>Atlante della materia</h1>
       <p>I 118 elementi conosciuti: com'è fatto ogni atomo, chi l'ha scoperto e a che cosa serve.</p>
     </header>
-    <label class="cerca"><span hidden>Cerca un elemento</span>
+    <div class="schede schede-home" role="tablist" aria-label="Sezione">
+      <button role="tab" data-sezione="elementi" aria-selected="true">Elementi</button>
+      <button role="tab" data-sezione="materiali" aria-selected="false">Materiali</button>
+    </div>
+    <label class="cerca"><span hidden>Cerca</span>
       <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m13 13 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       <input id="cerca" type="search" inputmode="search" autocomplete="off" placeholder="Cerca per nome, simbolo o numero">
     </label>
+    <div id="sezione-elementi">
     <ul class="risultati" id="risultati"></ul>
     <div class="tavola-wrap"><div class="tavola" id="tavola" role="grid" aria-label="Tavola periodica degli elementi"></div></div>
     <div class="legenda" id="legenda" aria-label="Famiglie di elementi"></div>
     <p class="nota-tavola">Tocca un elemento per aprire la sua scheda. Sul telefono puoi tenere il dito sulla tavola e scorrere: la lente mostra l'elemento sotto il dito.</p>
+    </div>
+    <div id="sezione-materiali" hidden>
+      <div class="categorie" id="categorie" aria-label="Categorie di materiali"></div>
+      <div class="lista-materiali" id="lista-materiali"></div>
+    </div>
     <footer>
       <p>Atlante della materia (in inglese, Atlas of Matter). Dati da PubChem, NIST e IUPAC: l'app li contiene tutti e funziona anche senza connessione.</p>
       <p id="installa-ios" hidden>Per installarla su iPhone: tocca Condividi, poi «Aggiungi alla schermata Home».</p>
@@ -246,6 +298,7 @@ footer button{border:1px solid rgba(214,226,255,.25);background:var(--vetro);bor
     </section>
     <section class="parte testo"><h2>A che cosa serve</h2><p id="usi"></p></section>
     <section class="parte testo"><h2>Curiosità</h2><p id="curiosita"></p></section>
+    <section class="parte"><h2>Nei materiali dell'Atlante</h2><div id="nei-materiali"></div></section>
     <section class="parte fonti">
       <h2>Fonti dei dati</h2>
       <ul>
@@ -256,11 +309,47 @@ footer button{border:1px solid rgba(214,226,255,.25);background:var(--vetro);bor
       </ul>
     </section>
   </article>
+
+  <article class="pagina" id="vista-materiale" hidden>
+    <nav class="barra" aria-label="Navigazione">
+      <button id="torna-mat"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Materiali</button>
+      <div class="vicini">
+        <button id="prec-mat" aria-label="Materiale precedente"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button id="succ-mat" aria-label="Materiale successivo"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </nav>
+    <header class="eroe eroe-mat">
+      <div class="numero" id="mat-categoria"></div>
+      <div class="formula-grande" id="mat-formula"></div>
+      <h1 id="mat-nome"></h1>
+      <p class="meta" id="mat-meta"></p>
+    </header>
+    <div class="visore"><canvas id="visore-mat" aria-label="Modello tridimensionale: trascina per ruotarlo"></canvas></div>
+    <div class="legenda-atomi" id="mat-legenda"></div>
+    <div class="strumenti-visore"><button id="mat-simboli" aria-pressed="false">Mostra i simboli</button></div>
+    <p class="didascalia" id="mat-didascalia"></p>
+
+    <section class="parte">
+      <h2>Di cosa è fatto</h2>
+      <ul class="composti" id="mat-composizione"></ul>
+      <p class="fonte" id="mat-comp-nota" style="margin-top:10px"></p>
+    </section>
+    <section class="parte testo"><h2>Che cos'è</h2><p id="mat-descr"></p></section>
+    <section class="parte testo"><h2>A che cosa serve</h2><p id="mat-usi"></p></section>
+    <section class="parte fonti">
+      <h2>Fonti dei dati</h2>
+      <ul>
+        <li>Formula e composizione: calcolate dalla formula con le masse atomiche IUPAC riportate da <a href="https://pubchem.ncbi.nlm.nih.gov/periodic-table/" rel="noopener">PubChem</a>.</li>
+        <li id="mat-fonte-3d"></li>
+      </ul>
+    </section>
+  </article>
 </main>
 <div class="lente-tavola" id="lente" hidden aria-hidden="true"></div>
 
 <script>
 const ELEMENTI = /*DATI*/;
+const MATERIALI_DATI = /*MATERIALI*/;
 </script>
 <script>
 /*APP*/

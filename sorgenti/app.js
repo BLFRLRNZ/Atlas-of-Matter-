@@ -144,6 +144,7 @@ function evidenzia(filtro) {
 /* ricerca */
 const normalizza = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 $('cerca').addEventListener('input', (ev) => {
+  if (sezione === 'materiali') { mostraListaMateriali(); return; }
   const q = normalizza(ev.target.value);
   const ris = $('risultati');
   ris.innerHTML = '';
@@ -164,23 +165,48 @@ $('cerca').addEventListener('input', (ev) => {
   }
 });
 $('cerca').addEventListener('keydown', (ev) => {
-  if (ev.key === 'Enter') { const b = $('risultati').querySelector('button'); if (b) b.click(); }
+  if (ev.key !== 'Enter') return;
+  const b = sezione === 'materiali' ? $('lista-materiali').querySelector('button') : $('risultati').querySelector('button');
+  if (b) b.click();
 });
 
 /* ---------- navigazione ---------- */
 function apri(z) { location.hash = '#/' + z; }
+let sezione = 'elementi';
+function mostraVista(id) {
+  for (const v of ['vista-tavola', 'vista-elemento', 'vista-materiale']) $(v).hidden = v !== id;
+  if (id !== 'vista-elemento') visore.ferma();
+  if (id !== 'vista-materiale') visoreMat.ferma();
+}
+function impostaSezione(s) {
+  const cambia = sezione !== s;
+  sezione = s;
+  for (const b of document.querySelectorAll('.schede-home button')) b.setAttribute('aria-selected', String(b.dataset.sezione === s));
+  $('sezione-elementi').hidden = s !== 'elementi';
+  $('sezione-materiali').hidden = s !== 'materiali';
+  $('cerca').placeholder = s === 'materiali' ? 'Cerca un materiale per nome o formula' : 'Cerca per nome, simbolo o numero';
+  if (cambia) { $('cerca').value = ''; $('risultati').innerHTML = ''; evidenzia(() => true); }
+  if (s === 'materiali') mostraListaMateriali();
+}
 function instrada() {
-  const m = location.hash.match(/^#\/(\d+)$/);
-  const z = m ? +m[1] : 0;
-  if (z >= 1 && z <= 118) {
-    $('vista-tavola').hidden = true; $('vista-elemento').hidden = false;
-    mostraElemento(ELEMENTI[z - 1]);
+  const h = location.hash;
+  let m;
+  if ((m = h.match(/^#\/(\d+)$/)) && +m[1] >= 1 && +m[1] <= 118) {
+    mostraVista('vista-elemento');
+    mostraElemento(ELEMENTI[+m[1] - 1]);
+    scrollTo(0, 0);
+  } else if ((m = h.match(/^#\/m\/([\w-]+)$/)) && PER_ID[m[1]]) {
+    mostraVista('vista-materiale');
+    mostraMateriale(PER_ID[m[1]]);
     scrollTo(0, 0);
   } else {
-    $('vista-elemento').hidden = true; $('vista-tavola').hidden = false;
-    visore.ferma();
+    mostraVista('vista-tavola');
+    impostaSezione(h === '#/materiali' ? 'materiali' : 'elementi');
     document.title = 'Atlante della materia';
   }
+}
+for (const b of document.querySelectorAll('.schede-home button')) {
+  b.onclick = () => { location.hash = b.dataset.sezione === 'materiali' ? '#/materiali' : '#/'; };
 }
 $('torna').onclick = () => { location.hash = '#/'; };
 addEventListener('hashchange', instrada);
@@ -232,6 +258,7 @@ function mostraElemento(e) {
   $('storia').textContent = e.storia;
   $('usi').textContent = e.usi;
   $('curiosita').textContent = e.cur;
+  mostraNeiMateriali(e);
 
   costruisciOrbitali(e);
   visore.carica(e);
@@ -631,6 +658,279 @@ const visore = (() => {
   };
 })();
 
+/* ---------- materiali ---------- */
+const CATEGORIE = MATERIALI_DATI.categorie;
+const MATERIALI = MATERIALI_DATI.materiali;
+const PER_ID = Object.fromEntries(MATERIALI.map((m) => [m.id, m]));
+const ORDINE_MAT = CATEGORIE.flatMap(([c]) => MATERIALI.filter((m) => m.cat === c));
+const NOME_CAT = Object.fromEntries(CATEGORIE);
+const NEI_MAT = {};
+for (const m of ORDINE_MAT) for (const [z] of m.comp) (NEI_MAT[z] = NEI_MAT[z] || []).push(m);
+
+function formulaHTML(f) {
+  let carica = '';
+  const q = f.match(/([+-])$/);
+  if (q) { carica = '<sup>' + q[1].replace('-', '−') + '</sup>'; f = f.slice(0, -1); }
+  return f.split('·').map((parte) => {
+    const mm = parte.match(/^(\d+)(.*)$/);
+    const corpo = mm ? mm[2] : parte;
+    return (mm ? mm[1] : '') + corpo.replace(/([A-Za-z)])(\d+)/g, '$1<sub>$2</sub>');
+  }).join('·') + carica;
+}
+function cpk(z) {
+  const h = (ELEMENTI[z - 1].cpk || 'B0B0B0').padStart(6, '0');
+  return '#' + h;
+}
+// versione schiarita per i colori troppo scuri sul fondo blu notte
+function cpkChiaro(z) {
+  const n = parseInt(cpk(z).slice(1), 16);
+  let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (lum < 0.45) { const k = (0.45 - lum) * 1.4; r += (255 - r) * k; g += (255 - g) * k; b += (255 - b) * k; }
+  return 'rgb(' + (r | 0) + ',' + (g | 0) + ',' + (b | 0) + ')';
+}
+function puntini(m) {
+  return m.comp.slice().sort((a, b) => a[0] - b[0]).map(([z]) => '<i style="background:' + cpkChiaro(z) + '" title="' + ELEMENTI[z - 1].n + '"></i>').join('');
+}
+function rigaMateriale(m) {
+  return '<li><button class="riga-mat" data-id="' + m.id + '"><span class="rf">' + formulaHTML(m.f) + '</span><span class="rn">' + pedici(m.n) +
+    '</span><span class="rp" aria-hidden="true">' + puntini(m) + '</span></button></li>';
+}
+
+let catAttiva = null;
+function costruisciCategorie() {
+  const box = $('categorie');
+  const voci = [[null, 'Tutti']].concat(CATEGORIE);
+  box.innerHTML = voci.map(([c, nome]) => '<button data-cat="' + (c || '') + '" aria-pressed="' + (c === null) + '">' + nome + '</button>').join('');
+  box.onclick = (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    catAttiva = b.dataset.cat || null;
+    for (const x of box.children) x.setAttribute('aria-pressed', String(x === b));
+    mostraListaMateriali();
+  };
+}
+function mostraListaMateriali() {
+  const q = normalizza($('cerca').value);
+  const qf = q.replace(/\s/g, '');
+  const corrisponde = (m) => !q || normalizza(m.n).includes(q) || normalizza(m.f.replace('·', '')).startsWith(qf) || normalizza(m.d).includes(q) && q.length > 3;
+  let html = '', tot = 0;
+  for (const [c, nome] of CATEGORIE) {
+    if (catAttiva && c !== catAttiva) continue;
+    const voci = ORDINE_MAT.filter((m) => m.cat === c && corrisponde(m));
+    if (!voci.length) continue;
+    tot += voci.length;
+    html += '<h2>' + nome + '</h2><ul>' + voci.map(rigaMateriale).join('') + '</ul>';
+  }
+  $('lista-materiali').innerHTML = tot ? html : '<p class="vuoto-mat">Nessun materiale corrisponde a «' + $('cerca').value.replace(/[<&]/g, '') + '».</p>';
+}
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest('.riga-mat[data-id]');
+  if (b) location.hash = '#/m/' + b.dataset.id;
+});
+
+function articoloDet(nome) {
+  const n = nome.toLowerCase();
+  if (/^[aeiouh]/.test(n)) return "l'" + n;
+  if (/^(s[^aeiou]|z|x|gn|ps|pn|y)/.test(n)) return 'lo ' + n;
+  return 'il ' + n;
+}
+function mostraNeiMateriali(e) {
+  const lista = NEI_MAT[e.z] || [];
+  const nome = articoloDet(e.n);
+  const box = $('nei-materiali');
+  if (!lista.length) {
+    box.innerHTML = '<p class="isotopo" style="margin:0">Nessuno dei ' + MATERIALI.length + ' materiali dell\'Atlante contiene ' + nome + '.</p>';
+    return;
+  }
+  const Nome = nome.charAt(0).toUpperCase() + nome.slice(1);
+  box.innerHTML = '<details class="nei-materiali"><summary>' + Nome + ' è in ' + lista.length + (lista.length === 1 ? ' materiale' : ' materiali') +
+    ' dell\'Atlante</summary><ul class="lista-mat">' + lista.map(rigaMateriale).join('') + '</ul></details>';
+}
+
+let materialeCorrente = null;
+function mostraMateriale(m) {
+  materialeCorrente = m;
+  document.title = m.n + ' · Atlante della materia';
+  const i = ORDINE_MAT.indexOf(m);
+  const prec = ORDINE_MAT[i - 1], succ = ORDINE_MAT[i + 1];
+  $('prec-mat').hidden = !prec; $('succ-mat').hidden = !succ;
+  if (prec) { $('prec-mat').setAttribute('aria-label', 'Materiale precedente: ' + prec.n); $('prec-mat').onclick = () => { location.hash = '#/m/' + prec.id; }; }
+  if (succ) { $('succ-mat').setAttribute('aria-label', 'Materiale successivo: ' + succ.n); $('succ-mat').onclick = () => { location.hash = '#/m/' + succ.id; }; }
+  $('mat-categoria').textContent = NOME_CAT[m.cat];
+  $('mat-formula').innerHTML = formulaHTML(m.f);
+  $('mat-nome').innerHTML = pedici(m.n);
+  const unita = m.tipo === 'cristallo' || m.q ? 'massa della formula' : 'massa molare';
+  const stato = m.st === 'in soluzione' ? 'Esiste in soluzione' : m.st.charAt(0).toUpperCase() + m.st.slice(1) + ' a temperatura ambiente';
+  $('mat-meta').textContent = stato + ', ' + unita + ' ' + numero(m.mm, 2) + ' g/mol';
+  const contatori = {};
+  for (const z of m.a) contatori[z] = (contatori[z] || 0) + 1;
+  $('mat-legenda').innerHTML = Object.keys(contatori).map(Number).sort((a, b) => a - b)
+    .map((z) => '<span><i style="background:' + cpkChiaro(z) + '"></i>' + ELEMENTI[z - 1].n + '</span>').join('');
+  const unitaComp = m.tipo === 'cristallo' || m.q ? "nell'unità di formula" : 'nella molecola';
+  $('mat-composizione').innerHTML = m.comp.map(([z, n, perc]) => {
+    const e = ELEMENTI[z - 1];
+    return '<li><a href="#/' + z + '"><span class="cs" style="--c:' + cpkChiaro(z) + '">' + e.s + '</span><span class="cn">' + e.n +
+      '<small>' + n + (n === 1 ? ' atomo ' : ' atomi ') + unitaComp + '</small></span><span class="cp">' + numero(perc, 1) + '%</span>' +
+      '<span class="barra-perc"><b style="width:' + perc + '%;--k:' + cpkChiaro(z) + '"></b></span></a></li>';
+  }).join('');
+  $('mat-comp-nota').textContent = 'Le percentuali sono in massa: quanto pesa ogni elemento sul totale. Tocca un elemento per aprire la sua scheda.';
+  $('mat-descr').innerHTML = pedici(m.d);
+  $('mat-usi').innerHTML = pedici(m.u);
+  let didascalia;
+  if (m.tipo === 'cristallo') {
+    didascalia = 'Un frammento del reticolo cristallino. Nel cristallo vero questa disposizione si ripete miliardi di volte in tutte le direzioni. Trascina per ruotare.';
+    $('mat-fonte-3d').textContent = 'Modello 3D: costruito dalla struttura del cristallo e dalla sua costante di reticolo sperimentale.';
+  } else {
+    const ioni = m.b.length === 0 || (m.q && m.q.some((x) => x));
+    didascalia = 'Modello a sfere e bastoncini: le distanze tra gli atomi sono in scala, le sfere sono più piccole del vero per mostrare i legami.' +
+      (ioni ? ' Gli ioni sono mostrati vicini ma separati: nel solido vero formano un reticolo cristallino.' : '') + ' Trascina per ruotare.';
+    $('mat-fonte-3d').textContent = 'Modello 3D: calcolato dalla formula di struttura con lunghezze e angoli di legame standard. Il metodo è stato verificato su 642 molecole con struttura 3D pubblicata (database FreeSolv): lo scarto medio delle lunghezze di legame è di 0,01 Å.';
+  }
+  $('mat-didascalia').textContent = didascalia;
+  const simboli = m.a.length <= 24 && m.tipo !== 'cristallo';
+  visoreMat.carica(m, simboli);
+  etichettaSimboli(simboli);
+}
+function etichettaSimboli(on) {
+  $('mat-simboli').setAttribute('aria-pressed', String(on));
+  $('mat-simboli').textContent = on ? 'Nascondi i simboli' : 'Mostra i simboli';
+}
+$('torna-mat').onclick = () => { location.hash = '#/materiali'; };
+$('mat-simboli').onclick = () => {
+  const on = $('mat-simboli').getAttribute('aria-pressed') !== 'true';
+  etichettaSimboli(on);
+  visoreMat.simboli(on);
+};
+
+/* visore a sfere e bastoncini */
+const RAGGIO_COV = { 1: .31, 3: 1.28, 5: .84, 6: .76, 7: .71, 8: .66, 9: .57, 11: 1.66, 12: 1.41, 13: 1.21, 14: 1.11, 15: 1.07, 16: 1.05, 17: 1.02,
+  19: 2.03, 20: 1.76, 22: 1.6, 25: 1.39, 26: 1.32, 29: 1.32, 30: 1.22, 35: 1.2, 47: 1.45, 53: 1.39, 54: 1.4, 55: 2.44, 78: 1.36, 80: 1.32, 82: 1.46 };
+const RAGGIO_IONICO = { 3: .76, 11: 1.02, 12: .72, 19: 1.38, 20: 1.0, 30: .74, 47: 1.15, 55: 1.67, 82: 1.19, 8: 1.4, 9: 1.33, 16: 1.84, 17: 1.81, 35: 1.96 };
+const visoreMat = (() => {
+  const cv = $('visore-mat');
+  const ctx = cv.getContext('2d');
+  let W = 0, dpr = 1, yaw = 0.6, pitch = -0.35, t0 = 0, animando = false, visibile = true, mostraSimboli = false;
+  let atomi = [], legami = [], estensione = 1, ionico = false, cristallo = false;
+  const sprite = {};
+  function sfera(col) {
+    if (sprite[col]) return sprite[col];
+    const s = document.createElement('canvas'); s.width = s.height = 96;
+    const g = s.getContext('2d');
+    const gr = g.createRadialGradient(34, 32, 4, 48, 48, 48);
+    const n = parseInt(col.slice(1), 16), r = n >> 16, gg = (n >> 8) & 255, b = n & 255;
+    const sc = (f) => 'rgb(' + (r * f | 0) + ',' + (gg * f | 0) + ',' + (b * f | 0) + ')';
+    gr.addColorStop(0, '#ffffff'); gr.addColorStop(0.2, col); gr.addColorStop(0.85, sc(0.55)); gr.addColorStop(1, sc(0.35));
+    g.fillStyle = gr; g.beginPath(); g.arc(48, 48, 47, 0, 7); g.fill();
+    return (sprite[col] = s);
+  }
+  function carica(m, simboli) {
+    cristallo = m.tipo === 'cristallo';
+    ionico = cristallo && m.comp.some(([z]) => [3, 11, 12, 19, 20, 30, 47, 55, 82].includes(z));
+    mostraSimboli = simboli;
+    atomi = m.a.map((z, i) => {
+      const r = ionico ? 0.42 * (RAGGIO_IONICO[z] || 1.2) : 0.22 + 0.22 * (RAGGIO_COV[z] || 1.3);
+      return { z, x: m.x[3 * i], y: -m.x[3 * i + 1], zz: m.x[3 * i + 2], r, col: cpk(z), s: ELEMENTI[z - 1].s };
+    });
+    legami = m.b.map(([i, j, o]) => ({ i, j, o: cristallo ? 1 : o }));
+    // le molecole piccole non vengono ingrandite troppo: la scala resta confrontabile tra una scheda e l'altra
+    estensione = Math.max(2.0, ...atomi.map((a) => Math.hypot(a.x, a.y, a.zz) + a.r));
+    yaw = 0.6; pitch = -0.35;
+    avvia();
+  }
+  function proietta(x, y, z) {
+    const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+    const y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;
+    const f = 4 / (4 - z2 / estensione);
+    return [x1 * f, y2 * f, z2, f];
+  }
+  function frame(now) {
+    const dt = Math.min(0.05, (now - t0) / 1000); t0 = now;
+    if (!trascina.attivo && !MENO_MOTO) yaw += dt * 0.3;
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = cv.clientWidth || 360;
+    if (Math.round(w * dpr) !== cv.width) cv.width = cv.height = Math.round(w * dpr);
+    W = cv.width;
+    const c = W / 2, S = W * 0.45 / estensione;
+    ctx.clearRect(0, 0, W, W);
+    const g = ctx.createRadialGradient(c, c, 0, c, c, W * 0.5);
+    g.addColorStop(0, 'rgba(140,170,255,.10)'); g.addColorStop(1, 'rgba(140,170,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+    const P = atomi.map((a) => proietta(a.x, a.zz, a.y));
+    const voci = [];
+    for (let k = 0; k < atomi.length; k++) voci.push({ t: 'a', k, z: P[k][2] });
+    for (const l of legami) {
+      const zm = (P[l.i][2] + P[l.j][2]) / 2;
+      voci.push({ t: 'l', l, da: l.i, z: (P[l.i][2] + zm) / 2 - 0.001 });
+      voci.push({ t: 'l', l, da: l.j, z: (P[l.j][2] + zm) / 2 - 0.001 });
+    }
+    voci.sort((a, b) => a.z - b.z);
+    const prof = (z) => 0.55 + 0.45 * Math.min(1, Math.max(0, (z / estensione + 1) / 2));
+    for (const v of voci) {
+      if (v.t === 'a') {
+        const a = atomi[v.k], p = P[v.k];
+        const r = a.r * S * p[3];
+        ctx.globalAlpha = prof(p[2]);
+        ctx.drawImage(sfera(a.col), c + p[0] * S - r, c + p[1] * S - r, 2 * r, 2 * r);
+        if (mostraSimboli && r > 7 * dpr) {
+          const n = parseInt(a.col.slice(1), 16);
+          const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+          ctx.fillStyle = lum > 0.55 ? 'rgba(12,22,38,.85)' : 'rgba(255,255,255,.92)';
+          ctx.font = '500 ' + Math.round(r * 0.9) + 'px "DM Sans",sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(a.s, c + p[0] * S, c + p[1] * S + r * 0.05);
+        }
+        ctx.globalAlpha = 1;
+      } else {
+        const { l, da } = v;
+        const altro = da === l.i ? l.j : l.i;
+        const p = P[da], q = P[altro];
+        const x0 = c + p[0] * S, y0 = c + p[1] * S;
+        const xm = c + (p[0] + q[0]) / 2 * S, ym = c + (p[1] + q[1]) / 2 * S;
+        const dx = xm - x0, dy = ym - y0, L = Math.hypot(dx, dy) || 1;
+        const nx = -dy / L, ny = dx / L;
+        ctx.globalAlpha = prof(v.z);
+        if (ionico) {
+          ctx.strokeStyle = 'rgba(200,216,245,.35)'; ctx.lineWidth = 1.2 * dpr; ctx.setLineDash([]);
+          ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(xm, ym); ctx.stroke();
+        } else {
+          const base = 0.11 * S * p[3];
+          const col = atomi[da].col;
+          const linee = l.o === 3 ? [-1, 0, 1] : l.o === 2 ? [-0.6, 0.6] : l.o === 1.5 ? [-0.6, 0.6] : [0];
+          const spessore = l.o === 1 ? base : base * 0.62;
+          linee.forEach((k, idx) => {
+            ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, spessore); ctx.lineCap = 'round';
+            ctx.setLineDash(l.o === 1.5 && idx === 1 ? [spessore * 1.2, spessore * 1.4] : []);
+            const off = k * base * 1.15;
+            ctx.beginPath(); ctx.moveTo(x0 + nx * off, y0 + ny * off); ctx.lineTo(xm + nx * off, ym + ny * off); ctx.stroke();
+          });
+          ctx.setLineDash([]);
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+    const serve = trascina.attivo || !MENO_MOTO;
+    if (animando && serve && visibile && !document.hidden) requestAnimationFrame(frame); else animando = false;
+  }
+  function avvia() { if (!animando) { animando = true; t0 = performance.now(); requestAnimationFrame(frame); } }
+  const trascina = { attivo: false, x: 0, y: 0 };
+  cv.addEventListener('pointerdown', (ev) => { trascina.attivo = true; trascina.x = ev.clientX; trascina.y = ev.clientY; try { cv.setPointerCapture(ev.pointerId); } catch (_) {} avvia(); });
+  cv.addEventListener('pointermove', (ev) => {
+    if (!trascina.attivo) return;
+    yaw += (ev.clientX - trascina.x) * 0.01; pitch = Math.max(-1.5, Math.min(1.5, pitch + (ev.clientY - trascina.y) * 0.01));
+    trascina.x = ev.clientX; trascina.y = ev.clientY; avvia();
+  });
+  const fine = () => { trascina.attivo = false; };
+  cv.addEventListener('pointerup', fine); cv.addEventListener('pointercancel', fine);
+  new IntersectionObserver((v) => { visibile = v[0].isIntersecting; if (visibile && atomi.length) avvia(); }).observe(cv);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && atomi.length) avvia(); });
+  return {
+    carica,
+    simboli(on) { mostraSimboli = on; avvia(); },
+    ferma() { animando = false; },
+  };
+})();
+
 /* ---------- installazione e uso offline ---------- */
 let richiestaInstall = null;
 addEventListener('beforeinstallprompt', (ev) => { ev.preventDefault(); richiestaInstall = ev; $('installa').hidden = false; });
@@ -642,4 +942,5 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude|a
 
 costruisciTavola();
 costruisciLegenda();
+costruisciCategorie();
 instrada();
